@@ -79,7 +79,7 @@ export const handler = async (event) => {
         owner_id: OWN,
         client_first_name,
         client_last_name,
-        court_date: (body.court_date court_date: body.court_date || null,court_date: body.court_date || null, String(body.court_date)) || new Date().toISOString().slice(0,10),
+        court_date: (body.court_date court_date: (body.court_date court_date: body.court_date || null,court_date: (body.court_date court_date: body.court_date || null, String(body.court_date)) || new Date().toISOString().slice(0,10),court_date: body.court_date || null, String(body.court_date)) || new Date().toISOString().slice(0,10),
         next_appearance_date: body.next_appearance_date || null,
         court_name: body.court_name || null,
         law_firm: body.law_firm || null,
