@@ -2,7 +2,7 @@
 // GET (list/read), POST (create), PATCH (update/status/archive)
 // Matches DB columns: archived (bool), lawyer_name (string), etc.
 
-import { supabaseAdmin, ownerId } from './util/supabase.js'
+import { supabaseAdmin, ownerId } from './util/supabase.mjs'
 
 function json(status, obj) {
   return {

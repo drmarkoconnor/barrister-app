@@ -20,7 +20,7 @@ permalink: /app/attendance/index.html
 
   <div class="col-md-6">
     <label class="form-label">Court Date *</label>
-    <input type="date" class="form-control" name="court_date" required required>
+    <input type="date" class="form-control" name="court_date" required>
   </div>
   <div class="col-md-6">
     <label class="form-label">Next Appearance (optional)</label>
