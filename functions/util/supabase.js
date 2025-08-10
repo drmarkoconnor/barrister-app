@@ -5,7 +5,6 @@
  * - Uses the SERVICE ROLE key (bypasses RLS). Use ONLY in serverless functions.
  * - We explicitly set owner_id on every insert/update to maintain owner-only data.
  */
-import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 
 export function supabaseAdmin() {

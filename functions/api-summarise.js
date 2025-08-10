@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import OpenAI from 'openai'
 import { supabaseAdmin, ownerId } from './util/supabase.js'
 

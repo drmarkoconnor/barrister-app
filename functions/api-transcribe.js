@@ -1,4 +1,3 @@
-import 'dotenv/config'
 import OpenAI from 'openai'
 import fs from 'fs'
 import os from 'os'
