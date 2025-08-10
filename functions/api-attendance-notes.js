@@ -1,4 +1,7 @@
-// Netlify function: GET (list/read), POST (create), PATCH (update/status/archive)
+// functions/api-attendance-notes.js
+// GET (list/read), POST (create), PATCH (update/status/archive)
+// Matches DB columns: archived (bool), lawyer_name (string), etc.
+
 import { supabaseAdmin, ownerId } from './util/supabase.js'
 
 function json(status, obj) {
@@ -17,11 +20,14 @@ export const handler = async (event) => {
     const supabase = supabaseAdmin()
     const OWN = ownerId()
 
-    // GET: list or single
+    // ---------- GET ----------
     if (event.httpMethod === 'GET') {
-      const url = new URL(event.rawUrl || `http://x${event.path}?${event.queryStringParameters || ''}`)
+      const raw = event.rawUrl || `http://local${event.path}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters) : ''}`
+      const url = new URL(raw)
+
       const id = url.searchParams.get('id')
       const status = url.searchParams.get('status')
+      const archivedParam = (url.searchParams.get('archived') || '').toLowerCase()
       const limit = Math.min(Number(url.searchParams.get('limit') || 50), 200)
 
       if (id) {
@@ -31,7 +37,8 @@ export const handler = async (event) => {
           .eq('owner_id', OWN)
           .eq('id', id)
           .single()
-        if (error) return json(404, { error: 'Not found' })
+
+        if (error) return json(404, { error: 'Not found', code: error.code, details: error.message })
         return json(200, { item: data })
       }
 
@@ -44,20 +51,26 @@ export const handler = async (event) => {
 
       if (status) q = q.eq('status', status)
 
+      if (archivedParam === '1' || archivedParam === 'true') {
+        q = q.eq('archived', true)
+      } else if (archivedParam === 'all') {
+        // no filter
+      } else {
+        q = q.eq('archived', false)
+      }
+
       const { data, error } = await q
-      if (error) return json(500, { error: 'List failed' })
+      if (error) return json(500, { error: 'List failed', code: error.code, details: error.message })
       return json(200, { items: data, count: data?.length || 0 })
     }
 
-    // POST: create new record (used when no id yet)
+    // ---------- POST (create) ----------
     if (event.httpMethod === 'POST') {
       const body = safeParse(event.body)
       if (!body) return json(400, { error: 'Invalid JSON' })
 
-      // Minimal required fields — relax if you like
       const client_first_name = (body.client_first_name || '').trim()
-      const client_last_name  = (body.client_last_name || '').trim()
-
+      const client_last_name  = (body.client_last_name  || '').trim()
       if (!client_first_name || !client_last_name) {
         return json(400, { error: 'client_first_name and client_last_name are required' })
       }
@@ -87,17 +100,16 @@ export const handler = async (event) => {
 
       if (error) {
         console.error('Create attendance note error', error)
-        return json(500, { error: 'Create failed' })
+        return json(500, { error: 'Create failed', code: error.code, details: error.message })
       }
       return json(200, { id: data.id })
     }
 
-    // PATCH: update fields OR change status OR archive
+    // ---------- PATCH (update fields / status / archive) ----------
     if (event.httpMethod === 'PATCH') {
       const body = safeParse(event.body)
       if (!body || !body.id) return json(400, { error: 'id is required' })
 
-      // status transition
       if (body.action === 'status') {
         const next = String(body.status || '').trim()
         if (!['draft', 'final', 'sent'].includes(next)) {
@@ -108,22 +120,20 @@ export const handler = async (event) => {
           .update({ status: next })
           .eq('owner_id', OWN)
           .eq('id', body.id)
-        if (error) return json(500, { error: 'Status update failed' })
+        if (error) return json(500, { error: 'Status update failed', code: error.code, details: error.message })
         return json(200, { ok: true })
       }
 
-      // archive
       if (body.action === 'archive') {
         const { error } = await supabase
           .from('attendance_notes')
           .update({ archived: true })
           .eq('owner_id', OWN)
           .eq('id', body.id)
-        if (error) return json(500, { error: 'Archive failed' })
+        if (error) return json(500, { error: 'Archive failed', code: error.code, details: error.message })
         return json(200, { ok: true })
       }
 
-      // general field update
       const up = { ...body }
       delete up.id
       delete up.action
@@ -132,13 +142,13 @@ export const handler = async (event) => {
         .update(up)
         .eq('owner_id', OWN)
         .eq('id', body.id)
-      if (error) return json(500, { error: 'Update failed' })
+      if (error) return json(500, { error: 'Update failed', code: error.code, details: error.message })
       return json(200, { ok: true })
     }
 
     return json(405, { error: 'Method not allowed' })
   } catch (e) {
     console.error('api-attendance-notes error', e)
-    return json(500, { error: 'Internal error in api-attendance-notes' })
+    return json(500, { error: 'Internal error', details: e.message })
   }
 }
