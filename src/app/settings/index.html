@@ -1,0 +1,87 @@
+---
+title: Settings
+layout: app.njk
+permalink: /app/settings/index.html
+---
+
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="card mb-3">
+	<div class="card-header">Dropdown preferences (local)</div>
+	<div class="card-body">
+		<p class="text-muted small">
+			For now these are stored on this device only (favourites/pinned). We’ll
+			add Supabase‑synced directories next.
+		</p>
+		<div class="row g-2">
+			<div class="col-md-6">
+				<label class="form-label">Favourite Courts</label>
+				<input
+					id="fav_courts"
+					class="form-control"
+					placeholder="Comma‑separated, e.g. Wimbledon, Southwark"
+				/>
+			</div>
+			<div class="col-md-6">
+				<label class="form-label">Favourite Law Firms</label>
+				<input
+					id="fav_firms"
+					class="form-control"
+					placeholder="e.g. 23ES, Grabbit & Run"
+				/>
+			</div>
+		</div>
+		<button id="savePrefs" class="btn btn-primary mt-3">Save</button>
+		<span id="prefsStatus" class="small text-muted ms-2"></span>
+	</div>
+</div>
+
+<div class="card">
+	<div class="card-header">Templates</div>
+	<div class="card-body">
+		<p class="mb-1">
+			Chambers news snippet template (used when generating “Mark O’Connor was
+			acquitted of …”)
+		</p>
+		<textarea
+			id="chambers_tpl"
+			class="form-control"
+			rows="4"
+			placeholder="Use {{client_last}}, {{court_name}}, {{court_date}}, {{result}}…"
+		></textarea>
+		<button id="saveTpl" class="btn btn-secondary mt-3">Save</button>
+		<span id="tplStatus" class="small text-muted ms-2"></span>
+	</div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const favCourts = document.getElementById('fav_courts')
+		const favFirms = document.getElementById('fav_firms')
+		const tplArea = document.getElementById('chambers_tpl')
+
+		// load from localStorage
+		favCourts.value = localStorage.getItem('prefs_fav_courts') || ''
+		favFirms.value = localStorage.getItem('prefs_fav_firms') || ''
+		tplArea.value =
+			localStorage.getItem('tpl_chambers_news') ||
+			'Mark O’Connor secured a {{result}} in Rex v {{client_last}} at {{court_name}} on {{court_date}}.'
+
+		document.getElementById('savePrefs').addEventListener('click', () => {
+			localStorage.setItem('prefs_fav_courts', favCourts.value)
+			localStorage.setItem('prefs_fav_firms', favFirms.value)
+			document.getElementById('prefsStatus').textContent = 'Saved ✔'
+			setTimeout(() => {
+				document.getElementById('prefsStatus').textContent = ''
+			}, 1200)
+		})
+		document.getElementById('saveTpl').addEventListener('click', () => {
+			localStorage.setItem('tpl_chambers_news', tplArea.value)
+			document.getElementById('tplStatus').textContent = 'Saved ✔'
+			setTimeout(() => {
+				document.getElementById('tplStatus').textContent = ''
+			}, 1200)
+		})
+	})
+</script>
+

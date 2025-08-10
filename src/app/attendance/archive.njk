@@ -1,0 +1,64 @@
+---
+title: Archive
+layout: app.njk
+permalink: /app/attendance/archive/index.html
+---
+
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="mb-3">
+  <a href="/app/attendance/list/" class="btn btn-outline-secondary">Back to active</a>
+</div>
+
+<div id="archStatus" class="text-muted">Loading…</div>
+<div class="table-responsive">
+  <table class="table table-sm table-striped align-middle" id="archTable" style="display:none; font-size: 0.9rem;">
+    <thead>
+      <tr>
+        <th>Next</th>
+        <th>Date</th>
+        <th>Client</th>
+        <th>Court</th>
+        <th>Status</th>
+        <th style="white-space:nowrap">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="archBody"></tbody>
+  </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const st = document.getElementById('archStatus');
+  const t  = document.getElementById('archTable');
+  const tb = document.getElementById('archBody');
+
+  (async function load(){
+    try {
+      const res = await fetch('/.netlify/functions/api-attendance-notes?archived=1');
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      const items = data.items || [];
+      if (!items.length) { st.textContent = 'Archive is empty.'; return; }
+      st.textContent = ''; t.style.display = '';
+      tb.innerHTML = items.map(r => `
+        <tr>
+          <td>${fmt(r.next_appearance_date)}</td>
+          <td>${fmt(r.court_date)}</td>
+          <td>${escapeHtml([r.client_first_name, r.client_last_name].filter(Boolean).join(' '))}</td>
+          <td>${escapeHtml(r.court_name || '')}</td>
+          <td><span class="badge bg-secondary">${escapeHtml((r.status||'').toUpperCase())}</span></td>
+          <td>
+            <a class="btn btn-sm btn-outline-primary" href="/app/attendance/?id=${encodeURIComponent(r.id)}">Open</a>
+          </td>
+        </tr>
+      `).join('');
+    } catch (err) {
+      st.textContent = 'Failed to load: ' + (err.message || 'error');
+    }
+  })();
+
+  function escapeHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function fmt(iso){ try { return iso ? new Date(iso).toLocaleDateString('en-GB') : '' } catch { return iso || '' } }
+});
+</script>

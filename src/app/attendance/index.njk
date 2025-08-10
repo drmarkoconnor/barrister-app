@@ -1,0 +1,35 @@
+---
+title: Attendance Test
+layout: null
+permalink: /app/attendance/index.html
+---
+<!doctype html>
+<meta charset="utf-8">
+<title>Attendance Test</title>
+<h1>Attendance Test</h1>
+<p id="msg">Loading…</p>
+<pre id="out" style="white-space:pre-wrap;border:1px solid #ddd;padding:8px;max-height:360px;overflow:auto;"></pre>
+
+<script>console.log('ATT JS OK');</script>
+<script>
+(function(){
+  try {
+    var qs = new URLSearchParams(location.search);
+    var id = (qs.get('id') || '').trim();
+    document.getElementById('msg').textContent = id ? ('id=' + id) : 'No id in URL';
+
+    if (!id) return;
+
+    fetch('/.netlify/functions/api-attendance-notes?id=' + encodeURIComponent(id))
+      .then(function(r){ return r.text().then(function(t){ return {status:r.status, body:t}; }); })
+      .then(function(x){
+        document.getElementById('out').textContent = 'HTTP ' + x.status + '\n\n' + x.body;
+      })
+      .catch(function(e){
+        document.getElementById('out').textContent = 'Fetch error: ' + (e && e.message ? e.message : e);
+      });
+  } catch(e) {
+    document.getElementById('out').textContent = 'JS error: ' + (e && e.message ? e.message : e);
+  }
+})();
+</script>

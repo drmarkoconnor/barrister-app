@@ -1,0 +1,157 @@
+---
+title: Record Note
+layout: app.njk
+permalink: /app/record/index.html
+---
+
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="mb-3">
+	<button id="startBtn" class="btn btn-primary btn-lg w-100 mb-2">
+		🎙 Start Recording
+	</button>
+	<button id="stopBtn" class="btn btn-danger btn-lg w-100 mb-2" disabled>
+		⏹ Stop Recording
+	</button>
+</div>
+
+<div id="audioPreview" class="mb-3"></div>
+
+<button id="sendBtn" class="btn btn-success btn-lg w-100" disabled>
+	📤 Send for Transcription
+</button>
+
+<div id="result" class="mt-4"></div>
+
+<script>
+	/**
+	 * Record → Transcribe (Whisper) → Summarise (gpt-5-nano) → Show & Save
+	 * - One click on "Send" does both steps in sequence.
+	 * - Error messages surface real server errors (e.g., quota).
+	 */
+
+	let mediaRecorder
+	let audioChunks = []
+
+	// UI helpers
+	const startBtn = document.getElementById('startBtn')
+	const stopBtn = document.getElementById('stopBtn')
+	const sendBtn = document.getElementById('sendBtn')
+	const resultEl = document.getElementById('result')
+	const preview = document.getElementById('audioPreview')
+
+	// Start recording
+	startBtn.addEventListener('click', async () => {
+		audioChunks = []
+		const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+		mediaRecorder = new MediaRecorder(stream)
+		mediaRecorder.start()
+
+		mediaRecorder.ondataavailable = (e) => {
+			if (e.data.size > 0) audioChunks.push(e.data)
+		}
+
+		startBtn.disabled = true
+		stopBtn.disabled = false
+	})
+
+	// Stop recording + enable preview/send
+	stopBtn.addEventListener('click', () => {
+		mediaRecorder.stop()
+		mediaRecorder.onstop = () => {
+			const blob = new Blob(audioChunks, { type: 'audio/webm' })
+			const url = URL.createObjectURL(blob)
+			preview.innerHTML = `<audio controls src="${url}"></audio>`
+			sendBtn.disabled = false
+		}
+		startBtn.disabled = false
+		stopBtn.disabled = true
+	})
+
+	// Helper: Blob -> base64 data URL
+	function blobToDataURL(blob) {
+		return new Promise((resolve, reject) => {
+			const r = new FileReader()
+			r.onerror = reject
+			r.onloadend = () => resolve(r.result) // "data:audio/webm;base64,AAAA..."
+			r.readAsDataURL(blob)
+		})
+	}
+
+	// Core: chain transcribe -> summarise
+	sendBtn.addEventListener('click', async () => {
+		try {
+			// Freeze UI during processing
+			sendBtn.disabled = true
+			startBtn.disabled = true
+			stopBtn.disabled = true
+
+			// 1) Transcribe with Whisper via our function
+			resultEl.innerHTML = `<em>Transcribing…</em>`
+			const blob = new Blob(audioChunks, { type: 'audio/webm' })
+			const dataURL = await blobToDataURL(blob)
+
+			const tRes = await fetch('/.netlify/functions/api-transcribe', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ audioWebmBase64: dataURL }),
+			})
+
+			// If the function failed, show the raw response (often quota/billing info).
+			if (!tRes.ok) {
+				const raw = await tRes.text()
+				throw new Error(`Transcribe ${tRes.status}: ${raw.slice(0, 400)}…`)
+			}
+			const { transcript } = await tRes.json()
+			if (!transcript || transcript.trim().length < 2) {
+				throw new Error('Transcription returned empty text.')
+			}
+
+			// 2) Summarise into todos (gpt-5-nano) via our existing summariser
+			resultEl.innerHTML = `<em>Summarising…</em>`
+			const sRes = await fetch('/.netlify/functions/api-summarise', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ transcript }),
+			})
+
+			if (!sRes.ok) {
+				const raw = await sRes.text()
+				throw new Error(`Summarise ${sRes.status}: ${raw.slice(0, 400)}…`)
+			}
+
+			const data = await sRes.json()
+			// Pretty-print the result (summary + todos + counts, as your API returns)
+			resultEl.innerHTML = `
+      <h5>Summary</h5>
+      <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+    `
+		} catch (err) {
+			console.error(err)
+			resultEl.innerHTML = `<div class="alert alert-danger">${escapeHtml(
+				err.message || 'Error'
+			)}</div>`
+		} finally {
+			// Re-enable controls for another try
+			startBtn.disabled = false
+			stopBtn.disabled = true
+			sendBtn.disabled = false
+		}
+	})
+
+	// Minimal HTML escaper so error text can't inject markup
+	function escapeHtml(s) {
+		return String(s).replace(
+			/[&<>"']/g,
+			(c) =>
+				({
+					'&': '&amp;',
+					'<': '&lt;',
+					'>': '&gt;',
+					'"': '&quot;',
+					"'": '&#39;',
+				}[c])
+		)
+	}
+</script>
+

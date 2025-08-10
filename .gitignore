@@ -1,0 +1,15 @@
+node_modules/
+_site/
+.netlify/
+.DS_Store
+.env*
+node_modules
+_site
+.netlify
+.env
+.env.local
+node_modules
+_site
+.netlify
+.env
+.env.local

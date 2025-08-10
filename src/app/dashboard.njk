@@ -1,0 +1,203 @@
+---
+title: Action Hub
+layout: app.njk
+permalink: /app/dashboard/index.html
+---
+
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="row g-3 mb-4">
+	<div class="col-6">
+		<a href="/app/record/" class="btn btn-primary btn-lg w-100 p-4"
+			>🎙 Record Note</a
+		>
+	</div>
+	<div class="col-6">
+		<a href="/app/attendance/" class="btn btn-success btn-lg w-100 p-4"
+			>📝 New Attendance</a
+		>
+	</div>
+	<div class="col-6">
+		<a href="/app/attendance/list/" class="btn btn-dark btn-lg w-100 p-4"
+			>📚 All Attendance Notes</a
+		>
+	</div>
+	<div class="col-6">
+		<a
+			href="https://www.thetrainline.com/"
+			target="_blank"
+			rel="noopener"
+			class="btn btn-warning btn-lg w-100 p-4"
+			>🚆 Trainline</a
+		>
+	</div>
+</div>
+
+<div class="row g-4">
+	<!-- Todos -->
+	<div class="col-lg-6">
+		<h2 class="h4 mb-3">📌 Latest Todos</h2>
+		<div id="todosWrap" class="list-group small"></div>
+		<div id="todosStatus" class="text-muted small mt-2"></div>
+	</div>
+
+	<!-- Transcripts -->
+	<div class="col-lg-6">
+		<h2 class="h4 mb-3">🗒️ Recent Transcripts</h2>
+		<div id="txWrap" class="list-group small tx-list"></div>
+		<div id="txStatus" class="text-muted small mt-2"></div>
+	</div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		// ---------- TODOS (existing loader assumed present earlier; keeping minimal here) ----------
+		async function loadLatestTodos() {
+			const st = document.getElementById('todosStatus')
+			const wrap = document.getElementById('todosWrap')
+			st.textContent = 'Loading…'
+			try {
+				const res = await fetch(
+					'/.netlify/functions/api-todos?limit=10&status=open'
+				)
+				const data = await res.json()
+				if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+				const items = Array.isArray(data.items) ? data.items : []
+				wrap.innerHTML = items.length
+					? items
+							.map(
+								(t) => `
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <span>${escapeHtml(t.title)}</span>
+          <button class="btn btn-sm btn-outline-success todo-done" data-id="${
+						t.id
+					}">Mark done</button>
+        </div>
+      `
+							)
+							.join('')
+					: '<div class="text-muted">No open todos.</div>'
+				st.textContent = ''
+			} catch (err) {
+				console.error(err)
+				st.textContent = 'Failed to load todos: ' + (err.message || 'error')
+			}
+		}
+		document.addEventListener('click', async (e) => {
+			const btn = e.target.closest('.todo-done')
+			if (!btn) return
+			const id = btn.getAttribute('data-id')
+			btn.disabled = true
+			btn.textContent = '…'
+			try {
+				const res = await fetch('/.netlify/functions/api-todos-update', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ id, status: 'done' }),
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+				await loadLatestTodos()
+			} catch (err) {
+				console.error(err)
+				btn.disabled = false
+				btn.textContent = 'Mark done'
+				alert('Failed to update: ' + (err.message || 'error'))
+			}
+		})
+
+		// ---------- TRANSCRIPTS ----------
+		async function loadTranscripts() {
+			const st = document.getElementById('txStatus')
+			const wrap = document.getElementById('txWrap')
+			st.textContent = 'Loading…'
+			try {
+				const res = await fetch('/.netlify/functions/api-transcripts')
+				const data = await res.json()
+				if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+				const items = Array.isArray(data.items) ? data.items : []
+				wrap.innerHTML = items.length
+					? items.map(renderTx).join('')
+					: '<div class="text-muted">No transcripts yet.</div>'
+				st.textContent = ''
+			} catch (err) {
+				console.error(err)
+				st.textContent =
+					'Failed to load transcripts: ' + (err.message || 'error')
+			}
+		}
+
+		function renderTx(t) {
+			const when = formatDateTime(t.created_at)
+			const txt = (t.text || '').trim()
+			const short = txt.slice(0, 140).replace(/\s+/g, ' ')
+			return `
+      <details class="list-group-item tx-item">
+        <summary class="d-flex justify-content-between align-items-center">
+          <div class="me-3">
+            <div class="fw-semibold">${escapeHtml(when)}</div>
+            <div class="text-muted">${escapeHtml(short)}${
+				txt.length > 140 ? '…' : ''
+			}</div>
+          </div>
+          <span class="chev">›</span>
+        </summary>
+        <div class="mt-2 monosmall">${escapeHtml(txt)}</div>
+        <div class="mt-2">
+          <button class="btn btn-sm btn-outline-danger tx-del" data-id="${
+						t.id
+					}">Delete</button>
+        </div>
+      </details>
+    `
+		}
+
+		document.addEventListener('click', async (e) => {
+			const del = e.target.closest('.tx-del')
+			if (!del) return
+			const id = del.getAttribute('data-id')
+			del.disabled = true
+			del.textContent = '…'
+			try {
+				const res = await fetch(
+					'/.netlify/functions/api-transcripts?id=' + encodeURIComponent(id),
+					{ method: 'DELETE' }
+				)
+				const data = await res.json()
+				if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+				await loadTranscripts()
+			} catch (err) {
+				console.error(err)
+				alert('Delete failed: ' + (err.message || 'error'))
+				del.disabled = false
+				del.textContent = 'Delete'
+			}
+		})
+
+		function escapeHtml(s) {
+			return String(s || '').replace(
+				/[&<>"']/g,
+				(c) =>
+					({
+						'&': '&amp;',
+						'<': '&lt;',
+						'>': '&gt;',
+						'"': '&quot;',
+						"'": '&#39;',
+					}[c])
+			)
+		}
+		function formatDateTime(iso) {
+			try {
+				return new Date(iso).toLocaleString('en-GB')
+			} catch {
+				return iso || ''
+			}
+		}
+
+		// initial loads
+		loadLatestTodos()
+		loadTranscripts()
+	})
+</script>
+

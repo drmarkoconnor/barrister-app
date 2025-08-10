@@ -1,0 +1,31 @@
+{
+	"name": "barrister-app",
+	"type": "module",
+	"private": true,
+	"scripts": {
+		"dev": "netlify dev",
+		"build": "eleventy",
+		"serve": "eleventy --serve"
+	},
+	"dependencies": {
+		"@supabase/supabase-js": "^2.39.0",
+		"bootstrap": "^5.3.3",
+		"dotenv": "^17.2.1",
+		"node-fetch": "^3.3.2",
+		"openai": "^5.12.2",
+		"ws": "^8.16.0"
+	},
+	"devDependencies": {
+		"@11ty/eleventy": "^3.1.2",
+		"netlify-cli": "^17.38.1"
+	},
+	"version": "1.0.0",
+	"main": "index.js",
+	"directories": {
+		"doc": "docs"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"description": ""
+}

@@ -1,0 +1,185 @@
+---
+title: Attendance Notes
+layout: app.njk
+permalink: /app/attendance/list/index.html
+---
+
+<h1 class="mb-4">{{ title }}</h1>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+	<div class="d-flex gap-2">
+		<a href="/app/attendance/" class="btn btn-primary">+ New</a>
+		<a href="/app/attendance/archive/" class="btn btn-outline-secondary"
+			>Archive</a
+		>
+	</div>
+	<div class="form-check">
+		<input
+			class="form-check-input"
+			type="checkbox"
+			value=""
+			id="includeExpenses"
+		/>
+		<label class="form-check-label" for="includeExpenses"
+			>Include expenses in report</label
+		>
+	</div>
+</div>
+
+<div id="listStatus" class="text-muted">Loading…</div>
+<div class="table-responsive">
+	<table
+		class="table table-striped align-middle"
+		id="notesTable"
+		style="display: none"
+	>
+		<thead>
+			<tr>
+				<th>Next</th>
+				<th>Date</th>
+				<th>Client</th>
+				<th>Court</th>
+				<th>Status</th>
+				<th style="white-space: nowrap">Actions</th>
+			</tr>
+		</thead>
+		<tbody id="notesBody"></tbody>
+	</table>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const statusEl = document.getElementById('listStatus')
+		const table = document.getElementById('notesTable')
+		const tbody = document.getElementById('notesBody')
+		const cbIncl = document.getElementById('includeExpenses')
+
+		;(async function loadNotes() {
+			statusEl.textContent = 'Loading…'
+			try {
+				const res = await fetch('/.netlify/functions/api-attendance-notes')
+				const data = await res.json()
+				if (!res.ok) throw new Error(data?.error || 'HTTP ' + res.status)
+				const items = Array.isArray(data.items) ? data.items : []
+				if (!items.length) {
+					statusEl.textContent = 'No notes yet.'
+					return
+				}
+				statusEl.textContent = ''
+				table.style.display = ''
+				tbody.innerHTML = items.map(renderRow).join('')
+			} catch (err) {
+				statusEl.textContent = 'Failed to load: ' + (err.message || 'error')
+			}
+		})()
+
+		function renderRow(n) {
+			const date = fmt(n.court_date)
+			const next = n.next_appearance_date ? fmt(n.next_appearance_date) : ''
+			const client = [n.client_first_name, n.client_last_name]
+				.filter(Boolean)
+				.join(' ')
+			const court = n.court_name || ''
+			const status = (n.status || '').toUpperCase()
+			const id = n.id
+			return `
+      <tr data-id="${id}">
+        <td>${next}</td>
+        <td>${date}</td>
+        <td>${escapeHtml(client)}</td>
+        <td>${escapeHtml(court)}</td>
+        <td><span class="badge bg-secondary">${escapeHtml(status)}</span></td>
+        <td class="d-flex gap-2">
+          <a class="btn btn-sm btn-outline-primary" href="/app/attendance/?id=${encodeURIComponent(
+						id
+					)}">Open</a>
+          <button class="btn btn-sm btn-outline-dark gen-report">Report</button>
+          ${
+						n.status === 'draft'
+							? '<button class="btn btn-sm btn-outline-success to-final">Finalise</button>'
+							: ''
+					}
+          ${
+						n.status === 'final'
+							? '<button class="btn btn-sm btn-outline-success to-sent">Mark Sent</button>'
+							: ''
+					}
+          ${
+						n.status === 'sent'
+							? '<button class="btn btn-sm btn-outline-danger to-archive">Archive</button>'
+							: ''
+					}
+        </td>
+      </tr>
+    `
+		}
+
+		document.addEventListener('click', async (e) => {
+			const tr = e.target.closest('tr[data-id]')
+			if (!tr) return
+			const id = tr.getAttribute('data-id')
+
+			if (e.target.closest('.gen-report')) {
+				const include = cbIncl.checked ? '1' : '0'
+				const url = `/.netlify/functions/api-generate-attendance-html?id=${encodeURIComponent(
+					id
+				)}&include_expenses=${include}`
+				const w = window.open('', '_blank')
+				if (!w) return alert('Popup blocked')
+				const res = await fetch(url)
+				const html = await res.text()
+				w.document.open()
+				w.document.write(html)
+				w.document.close()
+			}
+
+			if (e.target.closest('.to-final')) {
+				await doPatch({ action: 'status', id, status: 'final' })
+			}
+			if (e.target.closest('.to-sent')) {
+				await doPatch({ action: 'status', id, status: 'sent' })
+			}
+			if (e.target.closest('.to-archive')) {
+				await doPatch({ action: 'archive', id })
+				tr.remove()
+			}
+		})
+
+		async function doPatch(payload) {
+			try {
+				const res = await fetch('/.netlify/functions/api-attendance-notes', {
+					method: 'PATCH',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload),
+				})
+				const data = await res.json()
+				if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`)
+				location.reload()
+			} catch (err) {
+				alert('Action failed: ' + (err.message || 'error'))
+			}
+		}
+
+		function escapeHtml(s) {
+			return String(s || '').replace(
+				/[&<>"']/g,
+				(c) =>
+					({
+						'&': '&amp;',
+						'<': '&lt;',
+						'>': '&gt;',
+						'"': '&quot;',
+						"'": '&#39;',
+					}[c])
+			)
+		}
+		function fmt(iso) {
+			try {
+				return new Date(iso).toLocaleDateString('en-GB')
+			} catch {
+				return iso || ''
+			}
+		}
+	})
+</script>
+
