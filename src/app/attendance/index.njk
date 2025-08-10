@@ -1,35 +1,87 @@
 ---
-title: Attendance Test
-layout: null
+title: Attendance Note
+layout: app.njk
 permalink: /app/attendance/index.html
 ---
-<!doctype html>
-<meta charset="utf-8">
-<title>Attendance Test</title>
-<h1>Attendance Test</h1>
-<p id="msg">Loading…</p>
-<pre id="out" style="white-space:pre-wrap;border:1px solid #ddd;padding:8px;max-height:360px;overflow:auto;"></pre>
 
-<script>console.log('ATT JS OK');</script>
-<script>
-(function(){
-  try {
-    var qs = new URLSearchParams(location.search);
-    var id = (qs.get('id') || '').trim();
-    document.getElementById('msg').textContent = id ? ('id=' + id) : 'No id in URL';
+<h1 class="mb-4">{{ title }}</h1>
 
-    if (!id) return;
+<form id="attForm" class="row g-3" novalidate>
+  <input type="hidden" name="id" id="note_id" />
 
-    fetch('/.netlify/functions/api-attendance-notes?id=' + encodeURIComponent(id))
-      .then(function(r){ return r.text().then(function(t){ return {status:r.status, body:t}; }); })
-      .then(function(x){
-        document.getElementById('out').textContent = 'HTTP ' + x.status + '\n\n' + x.body;
-      })
-      .catch(function(e){
-        document.getElementById('out').textContent = 'Fetch error: ' + (e && e.message ? e.message : e);
-      });
-  } catch(e) {
-    document.getElementById('out').textContent = 'JS error: ' + (e && e.message ? e.message : e);
-  }
-})();
-</script>
+  <div class="col-md-6">
+    <label class="form-label">Client First Name *</label>
+    <input class="form-control" name="client_first_name" required>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Client Last Name *</label>
+    <input class="form-control" name="client_last_name" required>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Court Date *</label>
+    <input type="date" class="form-control" name="court_date" required>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Next Appearance (optional)</label>
+    <input type="date" class="form-control" name="next_appearance_date">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Court</label>
+    <input class="form-control" name="court_name" placeholder="e.g. Wimbledon Crown Court">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Law Firm</label>
+    <input class="form-control" name="law_firm" placeholder="e.g. 23ES">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Lawyer (instructing)</label>
+    <input class="form-control" name="lawyer_name" placeholder="e.g. Jane Partner">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Coram (judge)</label>
+    <input class="form-control" name="coram" placeholder="e.g. HHJ Byrne">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Contra (opponent)</label>
+    <input class="form-control" name="contra" placeholder="e.g. Williams">
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Advice</label>
+    <textarea class="form-control" rows="6" name="advice_text" id="advice_text"></textarea>
+    <div class="d-flex gap-2 mt-2">
+      <button type="button" id="polishBtn" class="btn btn-outline-secondary">✨ Polish Text</button>
+      <span id="adviceStatus" class="small text-muted align-self-center"></span>
+    </div>
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Closing Paragraph</label>
+    <input class="form-control" name="closing_text" id="closing_text" placeholder="Thank you for instructing me…">
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label">Status</label>
+    <select class="form-select" id="status_select">
+      <option value="draft">Draft</option>
+      <option value="final">Final</option>
+      <option value="sent">Sent</option>
+    </select>
+    <div class="form-text">Draft is editable. Final/Sent are read-only; Sent can be archived.</div>
+  </div>
+
+  <div class="col-12 d-flex flex-wrap gap-2">
+    <button class="btn btn-success" type="button" id="saveBtn">Save</button>
+    <button class="btn btn-outline-danger" type="button" id="archiveBtn" disabled>Archive</button>
+    <button class="btn btn-outline-dark" type="button" id="viewReportBtn" disabled>View report</button>
+    <a href="/app/attendance/list/" class="btn btn-outline-secondary">All notes</a>
+  </div>
+
+  <div id="formStatus" class="small text-muted mt-2"></div>
+</form>
+
+<script src="/assets/js/attendance.js"></script>
