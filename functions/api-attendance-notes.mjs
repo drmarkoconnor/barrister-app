@@ -1,19 +1,13 @@
-// functions/api-attendance-notes.js
-// GET (list/read), POST (create), PATCH (update/status/archive)
-// Matches DB columns: archived (bool), lawyer_name (string), etc.
+// functions/api-attendance-notes.mjs
+// ESM Netlify Function: GET (read/list), POST (create), PATCH (update/status/archive)
+// DB columns expected: archived (bool), lawyer_name (text), court_date NOT NULL (defaulted here if missing)
 
 import { supabaseAdmin, ownerId } from './util/supabase.mjs'
 
 function json(status, obj) {
-  return {
-    statusCode: status,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(obj),
-  }
+  return { statusCode: status, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) }
 }
-function safeParse(s) {
-  try { return JSON.parse(s || '{}') } catch { return null }
-}
+function safeParse(s) { try { return JSON.parse(s || '{}') } catch { return null } }
 
 export const handler = async (event) => {
   try {
@@ -37,7 +31,6 @@ export const handler = async (event) => {
           .eq('owner_id', OWN)
           .eq('id', id)
           .single()
-
         if (error) return json(404, { error: 'Not found', code: error.code, details: error.message })
         return json(200, { item: data })
       }
@@ -50,13 +43,12 @@ export const handler = async (event) => {
         .limit(limit)
 
       if (status) q = q.eq('status', status)
-
       if (archivedParam === '1' || archivedParam === 'true') {
         q = q.eq('archived', true)
       } else if (archivedParam === 'all') {
         // no filter
       } else {
-        q = q.eq('archived', false)
+        q = q.eq('archived', false) // default active only
       }
 
       const { data, error } = await q
@@ -79,7 +71,7 @@ export const handler = async (event) => {
         owner_id: OWN,
         client_first_name,
         client_last_name,
-        court_date: (body.court_date court_date: (body.court_date court_date: body.court_date || null,court_date: (body.court_date court_date: body.court_date || null, String(body.court_date)) || new Date().toISOString().slice(0,10),court_date: body.court_date || null, String(body.court_date)) || new Date().toISOString().slice(0,10),
+        court_date: (body.court_date && String(body.court_date)) || new Date().toISOString().slice(0,10),
         next_appearance_date: body.next_appearance_date || null,
         court_name: body.court_name || null,
         law_firm: body.law_firm || null,
@@ -105,7 +97,7 @@ export const handler = async (event) => {
       return json(200, { id: data.id })
     }
 
-    // ---------- PATCH (update fields / status / archive) ----------
+    // ---------- PATCH (update / status / archive) ----------
     if (event.httpMethod === 'PATCH') {
       const body = safeParse(event.body)
       if (!body || !body.id) return json(400, { error: 'id is required' })
