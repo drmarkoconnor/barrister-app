@@ -76,7 +76,7 @@ export const handler = async (event) => {
         advice_text: body.advice_text || '',
         closing_text: body.closing_text || '',
         status: (body.status || 'draft'),
-        is_archived: false,
+        archived: false,
       }
 
       const { data, error } = await supabase
@@ -116,7 +116,7 @@ export const handler = async (event) => {
       if (body.action === 'archive') {
         const { error } = await supabase
           .from('attendance_notes')
-          .update({ is_archived: true })
+          .update({ archived: true })
           .eq('owner_id', OWN)
           .eq('id', body.id)
         if (error) return json(500, { error: 'Archive failed' })
