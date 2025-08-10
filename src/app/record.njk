@@ -23,7 +23,7 @@ permalink: /app/record/index.html
 
 <div id="result" class="mt-4"></div>
 
-<script>
+<script src="/assets/js/recorder.js">
 	/**
 	 * Record → Transcribe (Whisper) → Summarise (gpt-5-nano) → Show & Save
 	 * - One click on "Send" does both steps in sequence.
@@ -123,9 +123,9 @@ permalink: /app/record/index.html
 			const data = await sRes.json()
 			// Pretty-print the result (summary + todos + counts, as your API returns)
 			resultEl.innerHTML = `
-      <h5>Summary</h5>
-      <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
-    `
+	     <h5>Summary</h5>
+	     <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+	   `
 		} catch (err) {
 			console.error(err)
 			resultEl.innerHTML = `<div class="alert alert-danger">${escapeHtml(
