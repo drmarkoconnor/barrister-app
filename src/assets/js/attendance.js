@@ -101,7 +101,8 @@
 				amount: isFinite(a) && a > 0 ? Number(a.toFixed(2)) : 0,
 			})
 		}
-		if (exps.length) data.expenses = exps
+		// Always include expenses array so server can delete when empty
+		data.expenses = exps
 		// Guard: ensure court_date is set (DB NOT NULL)
 		if (!data.court_date) {
 			var cd = byName('court_date')
@@ -299,21 +300,51 @@
 
 		if (viewBtn)
 			viewBtn.addEventListener('click', async function () {
-				if (!idInput.value) return
-				var incl = document.getElementById('includeExpenses')
-				var include = incl && incl.checked ? '1' : '0'
-				var url =
-					'/.netlify/functions/api-generate-attendance-html?id=' +
-					encodeURIComponent(idInput.value) +
-					'&include_expenses=' +
-					include
 				var w = window.open('', '_blank')
 				if (!w) return alert('Popup blocked')
-				var r = await fetch(url)
-				var html = await r.text()
 				w.document.open()
-				w.document.write(html)
+				w.document.write(
+					'<!doctype html><title>Generating report…</title><body style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:16px;color:#343a40"><p>Saving latest changes…</p></body>'
+				)
 				w.document.close()
+
+				try {
+					// Always save current form (create or update) so expenses persist
+					var payload = formToJSON()
+					var curId = (idInput.value || '').trim()
+					if (!curId) {
+						curId = await createItem(payload)
+						idInput.value = curId
+						var url1 = new URL(location.href)
+						url1.searchParams.set('id', curId)
+						history.replaceState(null, '', url1.toString())
+						enable(viewBtn, true)
+						setStatusUI('draft')
+					} else {
+						await updateItem(curId, payload)
+					}
+
+					var incl = document.getElementById('includeExpenses')
+					var include = incl && incl.checked ? '1' : '0'
+					var url =
+						'/.netlify/functions/api-generate-attendance-html?id=' +
+						encodeURIComponent(curId) +
+						'&include_expenses=' +
+						include
+					var r = await fetch(url)
+					var html = await r.text()
+					w.document.open()
+					w.document.write(html)
+					w.document.close()
+				} catch (e) {
+					w.document.open()
+					w.document.write(
+						'<!doctype html><title>Error</title><body style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:16px;color:#dc3545"><h3>Failed to generate report</h3><pre style="white-space:pre-wrap">' +
+							(e && e.message ? e.message : 'Unknown error') +
+							'</pre></body>'
+					)
+					w.document.close()
+				}
 			})
 	}
 
