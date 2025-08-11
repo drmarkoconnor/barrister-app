@@ -1,13 +1,13 @@
-// functions/api-todos.mjs
+// functions/api-todos.js
 // GET:    /.netlify/functions/api-todos?limit=50&status=open|done|all
 // POST:   /.netlify/functions/api-todos   { title, due_at? }
 // PATCH:  /.netlify/functions/api-todos   { id, status?, title?, due_at? }
 // DELETE: /.netlify/functions/api-todos?id=<uuid>
 
-import { supabaseAdmin, ownerId } from './util/supabase.mjs'
+import { supabaseAdmin, ownerId } from './util/supabase.js'
 
-const json = (s,o)=>({statusCode:s,headers:{'Content-Type':'application/json'},body:JSON.stringify(o)})
-const parse = s=>{ try{return JSON.parse(s||'{}')}catch{return null} }
+const json = (s,o)=>({ statusCode:s, headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(o) })
+const parse = s=>{ try { return JSON.parse(s||'{}') } catch { return null } }
 
 export const handler = async (event) => {
   try {

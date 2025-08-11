@@ -1,7 +1,6 @@
 // functions/api-transcripts.mjs
 // GET:  /.netlify/functions/api-transcripts?limit=50
 // POST: /.netlify/functions/api-transcripts  { text, provider?, confidence?, duration_seconds? }
-// DELETE: /.netlify/functions/api-transcripts?id=<uuid>
 
 import { supabaseAdmin, ownerId } from './util/supabase.mjs'
 
@@ -52,22 +51,6 @@ export const handler = async (event) => {
 
       if (error) return json(500, { error: 'Create failed', code: error.code, details: error.message })
       return json(200, { id: data.id })
-    }
-
-    if (event.httpMethod === 'DELETE') {
-      const raw = event.rawUrl || `http://local${event.path}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters) : ''}`
-      const url = new URL(raw)
-      const id = (url.searchParams.get('id') || '').trim()
-      if (!id) return json(400, { error: 'id is required' })
-
-      const { error } = await supabase
-        .from('transcripts')
-        .delete()
-        .eq('owner_id', OWN)
-        .eq('id', id)
-
-      if (error) return json(500, { error: 'Delete failed', code: error.code, details: error.message })
-      return json(200, { ok: true })
     }
 
     return json(405, { error: 'Method not allowed' })

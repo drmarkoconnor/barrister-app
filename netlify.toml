@@ -3,9 +3,15 @@
   publish = "_site"
   functions = "functions"
 
+  [build.environment]
+    NODE_VERSION = "20"
+
 
 [dev]
   command = "npm run serve"
   port = 8888
   targetPort = 8080
   autoLaunch = true
+
+[functions]
+  node_bundler = "esbuild"

@@ -1,8 +1,8 @@
-// functions/api-attendance-notes.mjs
+// functions/api-attendance-notes.js
 // ESM Netlify Function: GET (read/list), POST (create), PATCH (update/status/archive)
 // DB columns expected: archived (bool), lawyer_name (text), court_date NOT NULL (defaulted here if missing)
 
-import { supabaseAdmin, ownerId } from './util/supabase.mjs'
+import { supabaseAdmin, ownerId } from './util/supabase.js'
 
 function json(status, obj) {
   return { statusCode: status, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) }
