@@ -1,7 +1,17 @@
 ---
-title: Barrister App
-layout: base.njk
+title: "Login"
+layout: layouts/base.njk
 ---
-<h1 class="mb-4">Barrister App</h1>
-<p class="lead">Welcome. Head to the Action Hub to get started.</p>
-<p><a class="btn btn-primary btn-lg" href="/app/dashboard/">Open Action Hub</a></p>
+<div class="container text-center" style="max-width:400px;margin-top:20vh;">
+  <h1 class="mb-4">Barrister App Login</h1>
+  <div class="card p-4 shadow-sm">
+    <div class="mb-3">
+      <label for="passwordInput" class="form-label">Enter password</label>
+      <input type="password" class="form-control" id="passwordInput" placeholder="••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary w-100" id="loginBtn" type="button">Login</button>
+    <div class="text-danger small mt-2 d-none" id="errorMsg">Incorrect password</div>
+  </div>
+</div>
+
+<script src="/assets/js/login.js"></script>
