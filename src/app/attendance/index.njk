@@ -61,7 +61,27 @@ permalink: /app/attendance/index.html
 
   <div class="col-12">
     <label class="form-label">Closing Paragraph</label>
-    <input class="form-control" name="closing_text" id="closing_text" placeholder="Thank you for instructing me…">
+    <div class="input-group">
+      <select class="form-select" id="closing_select">
+        <option value="">Choose a boilerplate…</option>
+        {% for line in closing_boilerplates %}
+          <option value="{{ line }}">{{ line }}</option>
+        {% endfor %}
+      </select>
+      <input class="form-control" name="closing_text" id="closing_text" placeholder="Thank you for instructing me…">
+    </div>
+    <div class="form-text">Pick a boilerplate then tweak the text if needed.</div>
+  </div>
+
+  <div class="col-12">
+    <label class="form-label">Expenses</label>
+    <div id="expensesBox" class="border rounded p-2">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="text-muted small">Add expense line items (optional)</div>
+        <button class="btn btn-sm btn-outline-primary" type="button" id="addExpenseBtn">+ Add expense</button>
+      </div>
+      <div id="expensesList"></div>
+    </div>
   </div>
 
   <div class="col-md-4">
@@ -74,10 +94,14 @@ permalink: /app/attendance/index.html
     <div class="form-text">Draft is editable. Final/Sent are read-only; Sent can be archived.</div>
   </div>
 
-  <div class="col-12 d-flex flex-wrap gap-2">
+  <div class="col-12 d-flex flex-wrap gap-2 align-items-center">
     <button class="btn btn-success" type="button" id="saveBtn">Save</button>
     <button class="btn btn-outline-danger" type="button" id="archiveBtn" disabled>Archive</button>
     <button class="btn btn-outline-dark" type="button" id="viewReportBtn" disabled>View report</button>
+    <div class="form-check ms-2">
+      <input class="form-check-input" type="checkbox" id="includeExpenses" />
+      <label class="form-check-label" for="includeExpenses">Include expenses</label>
+    </div>
     <a href="/app/attendance/list/" class="btn btn-outline-secondary">All notes</a>
   </div>
 
@@ -85,3 +109,43 @@ permalink: /app/attendance/index.html
 </form>
 
 <script src="/assets/js/attendance.js"></script>
+<script>
+  // Closing boilerplate -> input
+  document.addEventListener('DOMContentLoaded', function(){
+    var sel = document.getElementById('closing_select');
+    var inp = document.getElementById('closing_text');
+    if (sel && inp) sel.addEventListener('change', function(){ if(sel.value) inp.value = sel.value; });
+  });
+
+  // Expenses UI (lightweight, posts as flat fields exp_type[], exp_amount[])
+  document.addEventListener('DOMContentLoaded', function(){
+    var addBtn = document.getElementById('addExpenseBtn');
+    var list = document.getElementById('expensesList');
+    if(!addBtn || !list) return;
+    function row(){
+      var div = document.createElement('div');
+      div.className = 'row g-2 align-items-end mb-2';
+      div.innerHTML = `
+        <div class="col-md-6">
+          <label class="form-label small mb-1">Type</label>
+          <input name="exp_type[]" class="form-control" list="expTypes" placeholder="e.g. Travel - Train">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label small mb-1">Amount (£)</label>
+          <input name="exp_amount[]" class="form-control" type="number" step="0.01" min="0">
+        </div>
+        <div class="col-md-2">
+          <button type="button" class="btn btn-outline-danger w-100 rm-exp">Remove</button>
+        </div>`;
+      return div;
+    }
+    addBtn.addEventListener('click', function(){ list.appendChild(row()); });
+    list.addEventListener('click', function(e){ var b=e.target.closest('.rm-exp'); if(!b) return; b.closest('.row').remove(); });
+    // seed one row
+    list.appendChild(row());
+  });
+</script>
+<datalist id="expTypes">
+  {% for t in expense_types %}<option value="{{ t }}"></option>{% endfor %}
+  <option value="Miscellaneous"></option>
+</datalist>

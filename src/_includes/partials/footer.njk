@@ -1,0 +1,23 @@
+<footer class="site-footer mt-4 py-4 border-top">
+  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-start gap-2">
+    <div>
+      <div class="fw-semibold">{{ site.chambers.name }}</div>
+      {% if site.chambers.address %}
+        <div class="text-muted">{{ site.chambers.address }}</div>
+      {% endif %}
+    </div>
+    <div class="text-md-end">
+      <div>
+        {% if site.chambers.email %}
+          <a href="mailto:{{ site.chambers.email }}">{{ site.chambers.email }}</a>
+        {% endif %}
+        {% if site.chambers.phone_london %}
+          <span class="mx-1">•</span>{{ site.chambers.phone_london }}
+        {% endif %}
+      </div>
+      {% if site.chambers.phone_manchester %}
+        <div class="text-muted small">Manchester: {{ site.chambers.phone_manchester }}</div>
+      {% endif %}
+    </div>
+  </div>
+</footer>

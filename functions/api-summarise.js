@@ -89,7 +89,7 @@ export const handler = async (event) => {
 			return json(500, { error: 'Failed to save transcript' })
 		}
 
-		// 2) Summarise + produce todos using gpt-5-nano (no temperature param)
+		// 2) Summarise + produce todos using a small, available model
 		const openai = new OpenAI({ apiKey })
 		const prompt = buildPrompt(transcriptText)
 
@@ -97,7 +97,7 @@ export const handler = async (event) => {
 		let parsed = null
 		try {
 			const completion = await openai.chat.completions.create({
-				model: 'gpt-5-nano',
+				model: 'gpt-4o-mini',
 				response_format: { type: 'json_object' },
 				messages: [
 					{ role: 'system', content: 'You output strict JSON only.' },
@@ -110,7 +110,7 @@ export const handler = async (event) => {
 			// Fallback: ask again without response_format and then JSON.parse
 			try {
 				const completion = await openai.chat.completions.create({
-					model: 'gpt-5-nano',
+					model: 'gpt-4o-mini',
 					messages: [
 						{ role: 'system', content: 'You output strict JSON only.' },
 						{ role: 'user', content: prompt },

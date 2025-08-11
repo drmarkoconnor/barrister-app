@@ -1,0 +1,12 @@
+{
+	"title": "Barrister App",
+	"chambers": {
+		"name": "23ES Chambers",
+		"address": "1 Gray’s Inn Square, Holborn, London WC1R 5AA",
+		"phone_london": "020 7413 0353",
+		"phone_manchester": "0161 870 9969",
+		"email": "clerks@23es.com",
+		"website": "https://www.23es.com/"
+	}
+}
+
