@@ -18,6 +18,34 @@
 		return new Date().toISOString().slice(0, 10)
 	}
 
+	async function loadDirectory(type, datalistId) {
+		try {
+			var url =
+				'/.netlify/functions/api-directory?type=' + encodeURIComponent(type)
+			var r = await fetch(url)
+			var t = await r.text()
+			var j
+			try {
+				j = JSON.parse(t)
+			} catch {
+				j = null
+			}
+			if (!r.ok || !j || !Array.isArray(j.items)) return
+			var dl = document.getElementById(datalistId)
+			if (!dl) return
+			dl.innerHTML = j.items
+				.map(function (v) {
+					v = String(v || '').trim()
+					return v
+						? '<option value="' + v.replace(/"/g, '&quot;') + '"></option>'
+						: ''
+				})
+				.join('')
+		} catch (e) {
+			console.warn('directory load failed', type, e)
+		}
+	}
+
 	var form = $('#attForm')
 	var idInput = $('#note_id')
 	var statusSel = $('#status_select')
@@ -291,6 +319,12 @@
 
 	document.addEventListener('DOMContentLoaded', async function () {
 		wireEvents()
+
+		// Populate dynamic lists
+		loadDirectory('judges', 'dl_judges')
+		loadDirectory('lawyers', 'dl_lawyers')
+		loadDirectory('law_firms', 'dl_firms')
+		loadDirectory('courtrooms', 'dl_courts')
 
 		// If creating a new note (no id), prefill court_date to today for convenience
 		var qs = new URLSearchParams(location.search)

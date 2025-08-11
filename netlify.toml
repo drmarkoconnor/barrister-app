@@ -15,4 +15,12 @@
 
 [functions]
   node_bundler = "esbuild"
-  included_files = ["functions/util/**", "src/_data/site.json"]
+  included_files = [
+    "functions/util/**",
+    "src/_data/site.json",
+    "src/_data/judges.json",
+    "src/_data/lawyers.json",
+    "src/_data/law_firms.json",
+    "src/_data/courtrooms.json",
+    "src/_data/expense_types.json"
+  ]

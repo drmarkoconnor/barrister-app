@@ -29,20 +29,20 @@ permalink: /app/attendance/index.html
 
   <div class="col-md-6">
     <label class="form-label">Court</label>
-    <input class="form-control" name="court_name" placeholder="e.g. Wimbledon Crown Court">
+    <input class="form-control" name="court_name" list="dl_courts" placeholder="Type to search courts">
   </div>
   <div class="col-md-6">
     <label class="form-label">Law Firm</label>
-    <input class="form-control" name="law_firm" placeholder="e.g. 23ES">
+    <input class="form-control" name="law_firm" list="dl_firms" placeholder="Type to search law firms">
   </div>
 
   <div class="col-md-6">
     <label class="form-label">Lawyer (instructing)</label>
-    <input class="form-control" name="lawyer_name" placeholder="e.g. Jane Partner">
+    <input class="form-control" name="lawyer_name" list="dl_lawyers" placeholder="Type to search lawyers">
   </div>
   <div class="col-md-6">
     <label class="form-label">Coram (judge)</label>
-    <input class="form-control" name="coram" placeholder="e.g. HHJ Byrne">
+    <input class="form-control" name="coram" list="dl_judges" placeholder="Type to search judges">
   </div>
 
   <div class="col-md-6">
@@ -145,6 +145,10 @@ permalink: /app/attendance/index.html
     list.appendChild(row());
   });
 </script>
+<datalist id="dl_judges"></datalist>
+<datalist id="dl_lawyers"></datalist>
+<datalist id="dl_firms"></datalist>
+<datalist id="dl_courts"></datalist>
 <datalist id="expTypes">
   {% for t in expense_types %}<option value="{{ t }}"></option>{% endfor %}
   <option value="Miscellaneous"></option>
