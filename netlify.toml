@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
   publish = "_site"
-  functions = "functions"
+  functions = "functions/active"
 
   [build.environment]
     NODE_VERSION = "20"
@@ -15,3 +15,4 @@
 
 [functions]
   node_bundler = "esbuild"
+  included_files = ["functions/util/**", "src/_data/site.json"]
