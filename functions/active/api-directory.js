@@ -11,6 +11,7 @@ const TYPES = new Set([
 	'law_firms',
 	'courtrooms',
 	'contra',
+	'hearing_types',
 ])
 
 const json = (s, o) => ({

@@ -23,8 +23,8 @@ permalink: /app/attendance/index.html
     <input type="date" class="form-control" name="court_date" required required>
   </div>
   <div class="col-md-6">
-    <label class="form-label">Next Appearance (optional)</label>
-    <input type="date" class="form-control" name="next_appearance_date">
+  <label class="form-label">Next Steps Date (optional)</label>
+  <input type="date" class="form-control" name="next_steps_date">
   </div>
 
   <div class="col-md-6">
@@ -34,6 +34,11 @@ permalink: /app/attendance/index.html
   <div class="col-md-6">
     <label class="form-label">Law Firm</label>
     <input class="form-control" name="law_firm" list="dl_firms" placeholder="Type to search law firms">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Hearing Type</label>
+    <input class="form-control" name="hearing_type" list="dl_hearing_types" placeholder="e.g. Sentencing, Youth Court, 1st Appearance">
   </div>
 
   <div class="col-md-6">
@@ -57,6 +62,15 @@ permalink: /app/attendance/index.html
       <button type="button" id="polishBtn" class="btn btn-outline-secondary">✨ Polish Text</button>
       <span id="adviceStatus" class="small text-muted align-self-center"></span>
     </div>
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label">Outcome</label>
+    <input class="form-control" name="outcome" placeholder="e.g. Adjourned for reports">
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Remand</label>
+    <input class="form-control" name="remand" placeholder="e.g. Bail continued">
   </div>
 
   <div class="col-12">
@@ -154,6 +168,7 @@ permalink: /app/attendance/index.html
 <datalist id="dl_firms"></datalist>
 <datalist id="dl_courts"></datalist>
 <datalist id="dl_contra"></datalist>
+<datalist id="dl_hearing_types"></datalist>
 <datalist id="expTypes">
   {% for t in expense_types %}<option value="{{ t }}"></option>{% endfor %}
   <option value="Miscellaneous"></option>

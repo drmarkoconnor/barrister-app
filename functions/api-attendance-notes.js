@@ -119,12 +119,16 @@ export const handler = async (event) => {
 				court_date:
 					(body.court_date && String(body.court_date)) ||
 					new Date().toISOString().slice(0, 10),
-				next_appearance_date: body.next_appearance_date || null,
+				next_steps_date:
+					body.next_steps_date || body.next_appearance_date || null,
 				court_name: body.court_name || null,
 				law_firm: body.law_firm || null,
 				lawyer_name: body.lawyer_name || null,
+				hearing_type: body.hearing_type || null,
 				coram: body.coram || null,
 				contra: body.contra || null,
+				outcome: body.outcome || null,
+				remand: body.remand || null,
 				advice_text: body.advice_text || '',
 				closing_text: body.closing_text || '',
 				status: body.status || 'draft',
@@ -214,6 +218,14 @@ export const handler = async (event) => {
 			delete up.action
 			// Remove non-column props
 			delete up.expenses
+			// Back-compat: if client sent next_appearance_date, map to next_steps_date
+			if (
+				!Object.prototype.hasOwnProperty.call(up, 'next_steps_date') &&
+				Object.prototype.hasOwnProperty.call(up, 'next_appearance_date')
+			) {
+				up.next_steps_date = up.next_appearance_date
+				delete up.next_appearance_date
+			}
 			const { error } = await supabase
 				.from('attendance_notes')
 				.update(up)

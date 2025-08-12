@@ -61,7 +61,8 @@ permalink: /app/settings/index.html
 	<div class="card-header">Directory lists (Supabase)</div>
 	<div class="card-body">
 		<p class="text-muted small">
-			Manage dropdown lists used in the Attendance form.
+			Manage dropdown lists used in the Attendance form. Lists are seeded with a
+			couple of defaults; add your own as needed.
 		</p>
 		<div class="row g-3">
 			<div class="col-md-6">
@@ -134,6 +135,20 @@ permalink: /app/settings/index.html
 				</div>
 				<ul id="dir_contra_list" class="list-group mt-2"></ul>
 			</div>
+			<div class="col-md-6">
+				<label class="form-label">Hearing Types</label>
+				<div class="input-group">
+					<input
+						id="dir_hearing_types_val"
+						class="form-control"
+						placeholder="Add hearing type (e.g. Sentencing)"
+					/>
+					<button class="btn btn-outline-primary" id="dir_hearing_types_add">
+						Add
+					</button>
+				</div>
+				<ul id="dir_hearing_types_list" class="list-group mt-2"></ul>
+			</div>
 		</div>
 	</div>
 </div>
@@ -205,6 +220,7 @@ permalink: /app/settings/index.html
 		renderList('law_firms', 'dir_firms_list')
 		renderList('courtrooms', 'dir_courts_list')
 		renderList('contra', 'dir_contra_list')
+		renderList('hearing_types', 'dir_hearing_types_list')
 
 		document
 			.getElementById('dir_judges_add')
@@ -250,6 +266,15 @@ permalink: /app/settings/index.html
 				await dirAdd('contra', v)
 				document.getElementById('dir_contra_val').value = ''
 				renderList('contra', 'dir_contra_list')
+			})
+		document
+			.getElementById('dir_hearing_types_add')
+			.addEventListener('click', async () => {
+				const v = document.getElementById('dir_hearing_types_val').value.trim()
+				if (!v) return
+				await dirAdd('hearing_types', v)
+				document.getElementById('dir_hearing_types_val').value = ''
+				renderList('hearing_types', 'dir_hearing_types_list')
 			})
 	})
 </script>

@@ -143,6 +143,15 @@
 			if (el) el.value = it[k] == null ? '' : String(it[k])
 		})
 
+		// Back-compat: if API returned next_appearance_date, fill next_steps_date field
+		try {
+			var ns = byName('next_steps_date')
+			if (ns && !ns.value) {
+				var legacy = it.next_appearance_date || ''
+				if (legacy) ns.value = legacy
+			}
+		} catch {}
+
 		idInput.value = it.id
 		var st = it.status || 'draft'
 		statusSel && statusSel.setAttribute('data-current', st)
@@ -389,6 +398,42 @@
 		loadDirectory('law_firms', 'dl_firms')
 		loadDirectory('courtrooms', 'dl_courts')
 		loadDirectory('contra', 'dl_contra')
+		loadDirectory('hearing_types', 'dl_hearing_types')
+
+		// Auto-construct first advice line if empty and key fields present
+		try {
+			var adv = document.getElementById('advice_text')
+			function maybeSeedAdvice() {
+				if (!adv || (adv.value || '').trim()) return
+				var fn = byName('client_first_name')?.value?.trim() || ''
+				var ln = byName('client_last_name')?.value?.trim() || ''
+				var court = byName('court_name')?.value?.trim() || ''
+				var firm = byName('law_firm')?.value?.trim() || ''
+				var ht = byName('hearing_type')?.value?.trim() || ''
+				if (ln && court && firm) {
+					var name = (fn ? fn + ' ' : '') + ln
+					var line =
+						'I was instructed to represent ' +
+						name +
+						' at ' +
+						(court || 'court') +
+						(firm ? ' by ' + firm : '') +
+						(ht ? ' for ' + ht : '') +
+						'. '
+					adv.value = line
+				}
+			}
+			;[
+				'client_first_name',
+				'client_last_name',
+				'court_name',
+				'law_firm',
+				'hearing_type',
+			].forEach(function (n) {
+				var el = byName(n)
+				if (el) el.addEventListener('blur', maybeSeedAdvice)
+			})
+		} catch {}
 
 		// If creating a new note (no id), prefill court_date to today for convenience
 		var qs = new URLSearchParams(location.search)

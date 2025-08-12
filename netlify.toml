@@ -22,5 +22,6 @@
     "src/_data/lawyers.json",
     "src/_data/law_firms.json",
     "src/_data/courtrooms.json",
-    "src/_data/expense_types.json"
+  "src/_data/expense_types.json",
+  "src/_data/hearing_types.json"
   ]

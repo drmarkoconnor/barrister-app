@@ -96,14 +96,16 @@ export const handler = async (event) => {
 			.join(' ')
 		const caseTitle = `Rex v ${text(note.client_last_name || '')}`
 		const courtDate = dateUK(note.court_date)
-		const nextDate = note.next_appearance_date
-			? dateUK(note.next_appearance_date)
-			: ''
+		const nextDate =
+			note.next_steps_date || note.next_appearance_date
+				? dateUK(note.next_steps_date || note.next_appearance_date)
+				: ''
 		const coram = text(note.coram || note.judge_name || '')
 		const contra = text(note.contra || '')
 		const lawFirm = text(note.law_firm || '')
 		const lawyer = text(note.lawyer_name || '')
 		const courtName = text(note.court_name || '')
+		const hearingType = text(note.hearing_type || '')
 		const closing = text(note.closing_text || '')
 		const advice = text(note.advice_text || '')
 		const counsel = process.env.COUNSEL_NAME
@@ -209,10 +211,13 @@ export const handler = async (event) => {
 				<div class="col-md-6 d-flex"><div class="k">Contra</div><div class="v">${esc(
 					contra
 				)}</div></div>
+				<div class="col-md-6 d-flex"><div class="k">Hearing Type</div><div class="v">${
+					hearingType ? esc(hearingType) : '—'
+				}</div></div>
 				<div class="col-md-6 d-flex"><div class="k">Hearing Date</div><div class="v">${esc(
 					courtDate
 				)}</div></div>
-				<div class="col-md-6 d-flex"><div class="k">Next Appearance</div><div class="v">${
+				<div class="col-md-6 d-flex"><div class="k">Next Steps Date</div><div class="v">${
 					nextDate ? esc(nextDate) : '—'
 				}</div></div>
 				<div class="col-md-6 d-flex"><div class="k">Instructed by</div><div class="v">${esc(
