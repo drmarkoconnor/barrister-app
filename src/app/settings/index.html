@@ -153,12 +153,13 @@ permalink: /app/settings/index.html
 						v +
 						'</span><button class="btn btn-sm btn-outline-danger">Delete</button>'
 					const btn = li.querySelector('button')
-					btn.addEventListener('click', async () => {
+					btn.addEventListener('click', async (ev) => {
+						ev.preventDefault()
 						btn.disabled = true
 						try {
 							await dirDel(type, v)
 						} catch (e) {
-							console.warn(e)
+							alert('Delete failed: ' + (e.message || e))
 						}
 						renderList(type, listId)
 					})
@@ -170,55 +171,91 @@ permalink: /app/settings/index.html
 	document.addEventListener('DOMContentLoaded', () => {
 		document
 			.getElementById('dir_judges_add')
-			.addEventListener('click', async () => {
+			.addEventListener('click', async (e) => {
+				e.preventDefault()
 				const v = document.getElementById('dir_judges_val').value.trim()
 				if (!v) return
-				await dirAdd('judges', v)
+				try {
+					await dirAdd('judges', v)
+				} catch (err) {
+					alert('Add failed: ' + (err.message || err))
+					return
+				}
 				document.getElementById('dir_judges_val').value = ''
 				renderList('judges', 'dir_judges_list')
 			})
 		document
 			.getElementById('dir_lawyers_add')
-			.addEventListener('click', async () => {
+			.addEventListener('click', async (e) => {
+				e.preventDefault()
 				const v = document.getElementById('dir_lawyers_val').value.trim()
 				if (!v) return
-				await dirAdd('lawyers', v)
+				try {
+					await dirAdd('lawyers', v)
+				} catch (err) {
+					alert('Add failed: ' + (err.message || err))
+					return
+				}
 				document.getElementById('dir_lawyers_val').value = ''
 				renderList('lawyers', 'dir_lawyers_list')
 			})
 		document
 			.getElementById('dir_firms_add')
-			.addEventListener('click', async () => {
+			.addEventListener('click', async (e) => {
+				e.preventDefault()
 				const v = document.getElementById('dir_firms_val').value.trim()
 				if (!v) return
-				await dirAdd('law_firms', v)
+				try {
+					await dirAdd('law_firms', v)
+				} catch (err) {
+					alert('Add failed: ' + (err.message || err))
+					return
+				}
 				document.getElementById('dir_firms_val').value = ''
 				renderList('law_firms', 'dir_firms_list')
 			})
 		document
 			.getElementById('dir_courts_add')
-			.addEventListener('click', async () => {
+			.addEventListener('click', async (e) => {
+				e.preventDefault()
 				const v = document.getElementById('dir_courts_val').value.trim()
 				if (!v) return
-				await dirAdd('courtrooms', v)
+				try {
+					await dirAdd('courtrooms', v)
+				} catch (err) {
+					alert('Add failed: ' + (err.message || err))
+					return
+				}
 				document.getElementById('dir_courts_val').value = ''
 				renderList('courtrooms', 'dir_courts_list')
 			})
 		document
 			.getElementById('dir_contra_add')
-			.addEventListener('click', async () => {
+			.addEventListener('click', async (e) => {
+				e.preventDefault()
 				const v = document.getElementById('dir_contra_val').value.trim()
 				if (!v) return
-				await dirAdd('contra', v)
+				try {
+					await dirAdd('contra', v)
+				} catch (err) {
+					alert('Add failed: ' + (err.message || err))
+					return
+				}
 				document.getElementById('dir_contra_val').value = ''
 				renderList('contra', 'dir_contra_list')
 			})
 		document
 			.getElementById('dir_hearing_types_add')
-			.addEventListener('click', async () => {
+			.addEventListener('click', async (e) => {
+				e.preventDefault()
 				const v = document.getElementById('dir_hearing_types_val').value.trim()
 				if (!v) return
-				await dirAdd('hearing_types', v)
+				try {
+					await dirAdd('hearing_types', v)
+				} catch (err) {
+					alert('Add failed: ' + (err.message || err))
+					return
+				}
 				document.getElementById('dir_hearing_types_val').value = ''
 				renderList('hearing_types', 'dir_hearing_types_list')
 			})

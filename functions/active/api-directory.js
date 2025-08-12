@@ -1,5 +1,5 @@
 // ESM Netlify Function: manage directory lists (GET list, POST add, DELETE remove)
-// Types supported: judges, lawyers, law_firms, courtrooms
+// Types supported: judges, lawyers, law_firms, courtrooms, contra, hearing_types
 
 import { supabaseAdmin, ownerId } from './util/supabase.js'
 import fs from 'node:fs'
@@ -74,7 +74,7 @@ export const handler = async (event) => {
 				.eq('owner_id', OWN)
 				.eq('type', type)
 				.eq('value', value)
-				.maybeSingle?.()
+				.maybeSingle()
 
 			if (exists && (exists.id || exists.length)) return json(200, { ok: true })
 
