@@ -20,14 +20,8 @@ const json = (s, o) => ({
 	body: JSON.stringify(o),
 })
 
+// Seeds disabled: we now start lists blank so users add their own.
 function readStatic(type) {
-	try {
-		const p = path.resolve(process.cwd(), `src/_data/${type}.json`)
-		if (fs.existsSync(p)) {
-			const arr = JSON.parse(fs.readFileSync(p, 'utf-8'))
-			return Array.isArray(arr) ? arr : []
-		}
-	} catch {}
 	return []
 }
 
@@ -48,20 +42,18 @@ export const handler = async (event) => {
 		if (!TYPES.has(type)) return json(400, { error: 'Invalid or missing type' })
 
 		if (event.httpMethod === 'GET') {
-			const base = readStatic(type)
 			const { data, error } = await supabase
 				.from('directory_items')
 				.select('value')
 				.eq('owner_id', OWN)
 				.eq('type', type)
-				.order('created_at', { ascending: true })
+				.order('value', { ascending: true })
 			if (error)
 				return json(500, { error: 'List failed', details: error.message })
 			const items = Array.isArray(data)
 				? data.map((r) => String(r.value || '').trim()).filter(Boolean)
 				: []
-			const merged = Array.from(new Set([...base, ...items]))
-			return json(200, { items: merged })
+			return json(200, { items })
 		}
 
 		const body = (() => {

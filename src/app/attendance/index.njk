@@ -38,7 +38,13 @@ permalink: /app/attendance/index.html
 
   <div class="col-md-6">
     <label class="form-label">Hearing Type</label>
-    <input class="form-control" name="hearing_type" list="dl_hearing_types" placeholder="e.g. Sentencing, Youth Court, 1st Appearance">
+    <select class="form-select" name="hearing_type" id="hearing_type_select">
+      <option value="">Choose…</option>
+    </select>
+    <div class="mt-2" id="hearing_type_other_wrap" style="display:none">
+      <input class="form-control" id="hearing_type_other" placeholder="Enter new hearing type">
+      <div class="form-text">This will be saved and added to your Hearing Types list.</div>
+    </div>
   </div>
 
   <div class="col-md-6">
@@ -55,6 +61,10 @@ permalink: /app/attendance/index.html
     <select class="form-select" name="contra" id="contra_select">
       <option value="">Choose…</option>
     </select>
+    <div class="mt-2" id="contra_other_wrap" style="display:none">
+      <input class="form-control" id="contra_other" placeholder="Enter new contra">
+      <div class="form-text">This will be saved and added to your Contra list.</div>
+    </div>
   </div>
 
   <div class="col-12">
@@ -170,7 +180,7 @@ permalink: /app/attendance/index.html
 <datalist id="dl_firms"></datalist>
 <datalist id="dl_courts"></datalist>
 <!-- dl_contra removed for contra; using a real select instead -->
-<datalist id="dl_hearing_types"></datalist>
+<!-- dl_hearing_types replaced by select -->
 <datalist id="expTypes">
   {% for t in expense_types %}<option value="{{ t }}"></option>{% endfor %}
   <option value="Miscellaneous"></option>

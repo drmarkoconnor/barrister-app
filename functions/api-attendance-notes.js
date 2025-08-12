@@ -211,6 +211,38 @@ export const handler = async (event) => {
 			} catch (e) {
 				console.error('Expense insert error', e)
 			}
+			// After successful create, upsert directory items from provided fields
+			try {
+				const dir = (type, value) => ({ owner_id: OWN, type, value })
+				const toAdd = []
+				if (row.coram) toAdd.push(dir('judges', String(row.coram).trim()))
+				if (row.law_firm)
+					toAdd.push(dir('law_firms', String(row.law_firm).trim()))
+				if (row.lawyer_name)
+					toAdd.push(dir('lawyers', String(row.lawyer_name).trim()))
+				if (row.court_name)
+					toAdd.push(dir('courtrooms', String(row.court_name).trim()))
+				if (row.contra) toAdd.push(dir('contra', String(row.contra).trim()))
+				if (row.hearing_type)
+					toAdd.push(dir('hearing_types', String(row.hearing_type).trim()))
+				if (toAdd.length) {
+					for (const rec of toAdd) {
+						if (!rec.value) continue
+						const { data: exists } = await supabase
+							.from('directory_items')
+							.select('id')
+							.eq('owner_id', OWN)
+							.eq('type', rec.type)
+							.eq('value', rec.value)
+							.maybeSingle?.()
+						if (!exists || (!exists.id && !exists.length)) {
+							await supabase.from('directory_items').insert([rec])
+						}
+					}
+				}
+			} catch (e) {
+				console.warn('Directory auto-add skipped', e?.message || e)
+			}
 			return json(200, { id: data.id })
 		}
 
@@ -235,6 +267,34 @@ export const handler = async (event) => {
 						code: error.code,
 						details: error.message,
 					})
+				// After successful update, upsert directory items for any present fields
+				try {
+					const pick = (k) => String(up[k] ?? '').trim()
+					const dir = (type, value) => ({ owner_id: OWN, type, value })
+					const candidates = [
+						['judges', pick('coram')],
+						['law_firms', pick('law_firm')],
+						['lawyers', pick('lawyer_name')],
+						['courtrooms', pick('court_name')],
+						['contra', pick('contra')],
+						['hearing_types', pick('hearing_type')],
+					]
+					for (const [type, value] of candidates) {
+						if (!value) continue
+						const { data: exists } = await supabase
+							.from('directory_items')
+							.select('id')
+							.eq('owner_id', OWN)
+							.eq('type', type)
+							.eq('value', value)
+							.maybeSingle?.()
+						if (!exists || (!exists.id && !exists.length)) {
+							await supabase.from('directory_items').insert([dir(type, value)])
+						}
+					}
+				} catch (e) {
+					console.warn('Directory auto-add (update) skipped', e?.message || e)
+				}
 				return json(200, { ok: true })
 			}
 

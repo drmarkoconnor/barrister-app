@@ -47,6 +47,7 @@
 			if (type === 'contra' && contraSel) {
 				var opts =
 					'<option value="">Choose…</option>' +
+					'<option value="__OTHER__">Other…</option>' +
 					j.items
 						.map(function (v) {
 							v = String(v || '').trim()
@@ -60,6 +61,27 @@
 						})
 						.join('')
 				contraSel.innerHTML = opts
+			}
+
+			// Special-case: populate hearing_type_select if present
+			var htSel = document.getElementById('hearing_type_select')
+			if (type === 'hearing_types' && htSel) {
+				var opts2 =
+					'<option value="">Choose…</option>' +
+					'<option value="__OTHER__">Other…</option>' +
+					j.items
+						.map(function (v) {
+							v = String(v || '').trim()
+							return v
+								? '<option value="' +
+										v.replace(/"/g, '&quot;') +
+										'">' +
+										v.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+										'</option>'
+								: ''
+						})
+						.join('')
+				htSel.innerHTML = opts2
 			}
 		} catch (e) {
 			console.warn('directory load failed', type, e)
@@ -100,6 +122,28 @@
 			if (k === 'exp_type[]' || k === 'exp_amount[]') return // handled below
 			data[k] = String(v || '')
 		})
+
+		// Contra "Other…" support
+		try {
+			var sel = document.getElementById('contra_select')
+			var otherWrap = document.getElementById('contra_other_wrap')
+			var otherInp = document.getElementById('contra_other')
+			if (sel && sel.value === '__OTHER__' && otherInp) {
+				var custom = (otherInp.value || '').trim()
+				if (custom) data.contra = custom
+			}
+		} catch {}
+
+		// Hearing Type "Other…" support
+		try {
+			var sel2 = document.getElementById('hearing_type_select')
+			var otherWrap2 = document.getElementById('hearing_type_other_wrap')
+			var otherInp2 = document.getElementById('hearing_type_other')
+			if (sel2 && sel2.value === '__OTHER__' && otherInp2) {
+				var custom2 = (otherInp2.value || '').trim()
+				if (custom2) data.hearing_type = custom2
+			}
+		} catch {}
 		// Gather expenses into array of objects
 		var typs = Array.from(
 			document.querySelectorAll('input[name="exp_type[]"]')
@@ -169,6 +213,39 @@
 			if (ns && !ns.value) {
 				var legacy = it.next_appearance_date || ''
 				if (legacy) ns.value = legacy
+			}
+		} catch {}
+
+		// Ensure selects display values even if not yet in directory lists
+		try {
+			var htSel0 = document.getElementById('hearing_type_select')
+			var htVal0 =
+				(byName('hearing_type') && byName('hearing_type').value) || ''
+			if (htSel0 && htVal0) {
+				var hasHt = Array.from(htSel0.options).some(function (o) {
+					return o.value === htVal0
+				})
+				if (!hasHt) {
+					var opt = document.createElement('option')
+					opt.value = htVal0
+					opt.textContent = htVal0
+					htSel0.appendChild(opt)
+					htSel0.value = htVal0
+				}
+			}
+			var cSel0 = document.getElementById('contra_select')
+			var cVal0 = (byName('contra') && byName('contra').value) || ''
+			if (cSel0 && cVal0) {
+				var hasC = Array.from(cSel0.options).some(function (o) {
+					return o.value === cVal0
+				})
+				if (!hasC) {
+					var opt2 = document.createElement('option')
+					opt2.value = cVal0
+					opt2.textContent = cVal0
+					cSel0.appendChild(opt2)
+					cSel0.value = cVal0
+				}
 			}
 		} catch {}
 
@@ -304,6 +381,34 @@
 					enable(saveBtn, true)
 				}
 			})
+
+		// Contra "Other…" UI toggle
+		try {
+			var sel = document.getElementById('contra_select')
+			var otherWrap = document.getElementById('contra_other_wrap')
+			var otherInp = document.getElementById('contra_other')
+			if (sel) {
+				sel.addEventListener('change', function () {
+					var isOther = sel.value === '__OTHER__'
+					if (otherWrap) otherWrap.style.display = isOther ? '' : 'none'
+					if (isOther && otherInp) otherInp.focus()
+				})
+			}
+		} catch {}
+
+		// Hearing Type "Other…" UI toggle
+		try {
+			var sel2 = document.getElementById('hearing_type_select')
+			var otherWrap2 = document.getElementById('hearing_type_other_wrap')
+			var otherInp2 = document.getElementById('hearing_type_other')
+			if (sel2) {
+				sel2.addEventListener('change', function () {
+					var isOther = sel2.value === '__OTHER__'
+					if (otherWrap2) otherWrap2.style.display = isOther ? '' : 'none'
+					if (isOther && otherInp2) otherInp2.focus()
+				})
+			}
+		} catch {}
 
 		if (statusSel)
 			statusSel.addEventListener('change', async function () {

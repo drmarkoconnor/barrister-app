@@ -232,6 +232,7 @@ export const handler = async (event) => {
 	.btn-copy { border: 1px solid #dee2e6; }
 	table.table-sm td, table.table-sm th { padding: .4rem; }
 	.badge-status { font-size:.7rem; }
+	.logo-23es { height:36px; width:auto; }
 	.subtext { font-size:.9rem; color:#6c757d; }
 	.copy-toast { position:fixed; bottom:12px; right:12px; background:#212529; color:#fff; padding:8px 12px; border-radius:8px; opacity:0; transform:translateY(8px); transition:all .2s; }
 	.copy-toast.show { opacity:1; transform:none; }
@@ -293,9 +294,12 @@ export const handler = async (event) => {
 		</div>
 
 		<div class="report-card">
-			<div class="mb-3">
-				<h1 class="h3 mb-1">${esc(caseTitle)}</h1>
-				<div class="text-muted">Attendance Note</div>
+			<div class="mb-3 d-flex justify-content-between align-items-start">
+				<div>
+					<h1 class="h3 mb-1">${esc(caseTitle)}</h1>
+					<div class="text-muted">Attendance Note</div>
+				</div>
+				<img src="/assets/images/23eslogo.svg" alt="23ES" class="logo-23es" />
 			</div>
 
 			<div class="h-line"></div>

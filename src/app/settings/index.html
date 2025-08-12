@@ -8,125 +8,166 @@ permalink: /app/settings/index.html
 
 <!-- Removed local-only preferences card to reduce clutter -->
 
----
-title: Settings
-layout: app.njk
-permalink: /app/settings/index.html
----
-
-<h1 class="mb-4">{{ title }}</h1>
-
 <div class="card">
 	<div class="card-header">Directory lists</div>
 	<div class="card-body">
-		<p class="text-muted small">Manage dropdown suggestions used in the Attendance form.</p>
+		<p class="text-muted small">
+			Manage dropdown suggestions used in the Attendance form.
+		</p>
 		<div class="row g-3">
 			<div class="col-md-6">
 				<label class="form-label">Judges</label>
 				<div class="input-group">
-					<input id="dir_judges_val" class="form-control" placeholder="Add judge" />
-					<button class="btn btn-outline-primary" id="dir_judges_add">Add</button>
+					<input
+						id="dir_judges_val"
+						class="form-control"
+						placeholder="Add judge"
+					/>
+					<button class="btn btn-outline-primary" id="dir_judges_add">
+						Add
+					</button>
 				</div>
 				<ul id="dir_judges_list" class="list-group mt-2"></ul>
 			</div>
 			<div class="col-md-6">
 				<label class="form-label">Lawyers</label>
 				<div class="input-group">
-					<input id="dir_lawyers_val" class="form-control" placeholder="Add lawyer" />
-					<button class="btn btn-outline-primary" id="dir_lawyers_add">Add</button>
+					<input
+						id="dir_lawyers_val"
+						class="form-control"
+						placeholder="Add lawyer"
+					/>
+					<button class="btn btn-outline-primary" id="dir_lawyers_add">
+						Add
+					</button>
 				</div>
 				<ul id="dir_lawyers_list" class="list-group mt-2"></ul>
 			</div>
 			<div class="col-md-6">
 				<label class="form-label">Law Firms</label>
 				<div class="input-group">
-					<input id="dir_firms_val" class="form-control" placeholder="Add law firm" />
-					<button class="btn btn-outline-primary" id="dir_firms_add">Add</button>
+					<input
+						id="dir_firms_val"
+						class="form-control"
+						placeholder="Add law firm"
+					/>
+					<button class="btn btn-outline-primary" id="dir_firms_add">
+						Add
+					</button>
 				</div>
 				<ul id="dir_firms_list" class="list-group mt-2"></ul>
 			</div>
 			<div class="col-md-6">
 				<label class="form-label">Courtrooms</label>
 				<div class="input-group">
-					<input id="dir_courts_val" class="form-control" placeholder="Add courtroom" />
-					<button class="btn btn-outline-primary" id="dir_courts_add">Add</button>
+					<input
+						id="dir_courts_val"
+						class="form-control"
+						placeholder="Add courtroom"
+					/>
+					<button class="btn btn-outline-primary" id="dir_courts_add">
+						Add
+					</button>
 				</div>
 				<ul id="dir_courts_list" class="list-group mt-2"></ul>
 			</div>
 			<div class="col-md-6">
 				<label class="form-label">Contrary Party Names (Contra)</label>
 				<div class="input-group">
-					<input id="dir_contra_val" class="form-control" placeholder="Add contra" />
-					<button class="btn btn-outline-primary" id="dir_contra_add">Add</button>
+					<input
+						id="dir_contra_val"
+						class="form-control"
+						placeholder="Add contra"
+					/>
+					<button class="btn btn-outline-primary" id="dir_contra_add">
+						Add
+					</button>
 				</div>
 				<ul id="dir_contra_list" class="list-group mt-2"></ul>
 			</div>
 			<div class="col-md-6">
 				<label class="form-label">Hearing Types</label>
 				<div class="input-group">
-					<input id="dir_hearing_types_val" class="form-control" placeholder="Add hearing type" />
-					<button class="btn btn-outline-primary" id="dir_hearing_types_add">Add</button>
+					<input
+						id="dir_hearing_types_val"
+						class="form-control"
+						placeholder="Add hearing type"
+					/>
+					<button class="btn btn-outline-primary" id="dir_hearing_types_add">
+						Add
+					</button>
 				</div>
 				<ul id="dir_hearing_types_list" class="list-group mt-2"></ul>
 			</div>
 		</div>
 	</div>
-	</div>
+</div>
 
 <script>
-	async function dirFetch(type){
-		const r = await fetch('/.netlify/functions/api-directory?type='+encodeURIComponent(type));
-		const j = await r.json();
-		if(!r.ok) throw new Error(j.error||'failed');
-		return j.items||[];
+	async function dirFetch(type) {
+		const r = await fetch(
+			'/.netlify/functions/api-directory?type=' + encodeURIComponent(type)
+		)
+		const j = await r.json()
+		if (!r.ok) throw new Error(j.error || 'failed')
+		return j.items || []
 	}
-	async function dirAdd(type,value){
-		const r = await fetch('/.netlify/functions/api-directory?type='+encodeURIComponent(type),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({value})});
-		const j = await r.json();
-		if(!r.ok) throw new Error(j.error||'failed');
-		return true;
+	async function dirAdd(type, value) {
+		const r = await fetch(
+			'/.netlify/functions/api-directory?type=' + encodeURIComponent(type),
+			{
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ value }),
+			}
+		)
+		const j = await r.json()
+		if (!r.ok) throw new Error(j.error || 'failed')
+		return true
 	}
-	async function dirDel(type,value){
-		const r = await fetch('/.netlify/functions/api-directory?type='+encodeURIComponent(type),{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({value})});
-		const j = await r.json();
-		if(!r.ok) throw new Error(j.error||'failed');
-		return true;
+	async function dirDel(type, value) {
+		const r = await fetch(
+			'/.netlify/functions/api-directory?type=' + encodeURIComponent(type),
+			{
+				method: 'DELETE',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ value }),
+			}
+		)
+		const j = await r.json()
+		if (!r.ok) throw new Error(j.error || 'failed')
+		return true
 	}
-	function renderList(type, listId){
-		dirFetch(type).then(items=>{
-			const ul=document.getElementById(listId); if(!ul) return; ul.innerHTML='';
-			items.forEach(v=>{
-				const li=document.createElement('li');
-				li.className='list-group-item d-flex justify-content-between align-items-center';
-				li.innerHTML = '<span>'+v+'</span><button class="btn btn-sm btn-outline-danger">Delete</button>';
-				const btn=li.querySelector('button');
-				btn.addEventListener('click', async ()=>{ btn.disabled=true; try{ await dirDel(type,v) }catch(e){ console.warn(e) } renderList(type,listId) })
-				ul.appendChild(li);
+	function renderList(type, listId) {
+		dirFetch(type)
+			.then((items) => {
+				const ul = document.getElementById(listId)
+				if (!ul) return
+				ul.innerHTML = ''
+				items.forEach((v) => {
+					const li = document.createElement('li')
+					li.className =
+						'list-group-item d-flex justify-content-between align-items-center'
+					li.innerHTML =
+						'<span>' +
+						v +
+						'</span><button class="btn btn-sm btn-outline-danger">Delete</button>'
+					const btn = li.querySelector('button')
+					btn.addEventListener('click', async () => {
+						btn.disabled = true
+						try {
+							await dirDel(type, v)
+						} catch (e) {
+							console.warn(e)
+						}
+						renderList(type, listId)
+					})
+					ul.appendChild(li)
+				})
 			})
-		}).catch(console.warn)
+			.catch(console.warn)
 	}
-	document.addEventListener('DOMContentLoaded',()=>{
-		document.getElementById('dir_judges_add').addEventListener('click', async ()=>{ const v=document.getElementById('dir_judges_val').value.trim(); if(!v) return; await dirAdd('judges',v); document.getElementById('dir_judges_val').value=''; renderList('judges','dir_judges_list') })
-		document.getElementById('dir_lawyers_add').addEventListener('click', async ()=>{ const v=document.getElementById('dir_lawyers_val').value.trim(); if(!v) return; await dirAdd('lawyers',v); document.getElementById('dir_lawyers_val').value=''; renderList('lawyers','dir_lawyers_list') })
-		document.getElementById('dir_firms_add').addEventListener('click', async ()=>{ const v=document.getElementById('dir_firms_val').value.trim(); if(!v) return; await dirAdd('law_firms',v); document.getElementById('dir_firms_val').value=''; renderList('law_firms','dir_firms_list') })
-		document.getElementById('dir_courts_add').addEventListener('click', async ()=>{ const v=document.getElementById('dir_courts_val').value.trim(); if(!v) return; await dirAdd('courtrooms',v); document.getElementById('dir_courts_val').value=''; renderList('courtrooms','dir_courts_list') })
-		document.getElementById('dir_contra_add').addEventListener('click', async ()=>{ const v=document.getElementById('dir_contra_val').value.trim(); if(!v) return; await dirAdd('contra',v); document.getElementById('dir_contra_val').value=''; renderList('contra','dir_contra_list') })
-		document.getElementById('dir_hearing_types_add').addEventListener('click', async ()=>{ const v=document.getElementById('dir_hearing_types_val').value.trim(); if(!v) return; await dirAdd('hearing_types',v); document.getElementById('dir_hearing_types_val').value=''; renderList('hearing_types','dir_hearing_types_list') })
-		renderList('judges','dir_judges_list');
-		renderList('lawyers','dir_lawyers_list');
-		renderList('law_firms','dir_firms_list');
-		renderList('courtrooms','dir_courts_list');
-		renderList('contra','dir_contra_list');
-		renderList('hearing_types','dir_hearing_types_list');
-	})
-</script>
-		renderList('judges', 'dir_judges_list')
-		renderList('lawyers', 'dir_lawyers_list')
-		renderList('law_firms', 'dir_firms_list')
-		renderList('courtrooms', 'dir_courts_list')
-		renderList('contra', 'dir_contra_list')
-		renderList('hearing_types', 'dir_hearing_types_list')
-
+	document.addEventListener('DOMContentLoaded', () => {
 		document
 			.getElementById('dir_judges_add')
 			.addEventListener('click', async () => {
@@ -181,6 +222,12 @@ permalink: /app/settings/index.html
 				document.getElementById('dir_hearing_types_val').value = ''
 				renderList('hearing_types', 'dir_hearing_types_list')
 			})
+		renderList('judges', 'dir_judges_list')
+		renderList('lawyers', 'dir_lawyers_list')
+		renderList('law_firms', 'dir_firms_list')
+		renderList('courtrooms', 'dir_courts_list')
+		renderList('contra', 'dir_contra_list')
+		renderList('hearing_types', 'dir_hearing_types_list')
 	})
 </script>
 
