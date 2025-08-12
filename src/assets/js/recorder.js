@@ -11,6 +11,9 @@
 		const audioEl = document.getElementById('preview')
 		const statusEl = document.getElementById('recStatus')
 		const outEl = document.getElementById('recOut')
+		const transcriptEl = document.getElementById('recTranscript')
+		const summaryEl = document.getElementById('recSummary')
+		const todosEl = document.getElementById('recTodos')
 		const fileCap = document.getElementById('fileCapture') // hidden input for fallback
 
 		// State
@@ -22,13 +25,43 @@
 		let objectUrl = null
 		let usingFallback = false
 
+		function setStatus(kind, msg) {
+			if (!statusEl) return
+			statusEl.className = 'alert py-2 px-3 mb-3 ' + (kind || 'alert-secondary')
+			statusEl.textContent = msg
+		}
 		function log(msg) {
-			if (statusEl) statusEl.textContent = msg
+			setStatus('alert-info', msg)
 			console.log('[rec]', msg)
 		}
 		function printJSON(obj) {
 			if (!outEl) return
 			outEl.textContent = JSON.stringify(obj, null, 2)
+		}
+
+		function renderTranscript(text) {
+			if (transcriptEl) transcriptEl.textContent = text || ''
+		}
+		function renderSummaryTodos(summary, todos) {
+			if (summaryEl) summaryEl.textContent = summary || ''
+			if (todosEl) {
+				todosEl.innerHTML = ''
+				;(Array.isArray(todos) ? todos : []).forEach(function (t) {
+					var li = document.createElement('li')
+					li.className =
+						'list-group-item d-flex justify-content-between align-items-center'
+					var title = t && t.title ? String(t.title) : ''
+					var due = t && t.due_at ? String(t.due_at) : null
+					li.innerHTML =
+						'<span>' +
+						title.replace(/</g, '&lt;') +
+						'</span>' +
+						(due
+							? '<span class="badge bg-secondary">Due ' + due + '</span>'
+							: '')
+					todosEl.appendChild(li)
+				})
+			}
 		}
 		function clearPreview() {
 			try {
@@ -138,7 +171,7 @@
 				if (mediaRec && mediaRec.state !== 'inactive') mediaRec.stop()
 				stopBtn.disabled = true
 				recBtn.disabled = false
-				log('Stopping…')
+				setStatus('alert-warning', 'Stopping…')
 			} catch (e) {
 				log('Stop error: ' + (e.message || e))
 			}
@@ -150,7 +183,7 @@
 				objectUrl = URL.createObjectURL(blob)
 				audioEl.src = objectUrl
 				audioEl.load()
-				log('Ready to play / send')
+				setStatus('alert-success', 'Ready to play / send')
 				playBtn.disabled = false
 				sendBtn.disabled = false
 				// stop mic tracks
@@ -211,7 +244,7 @@
 				log('No audio to send')
 				return
 			}
-			log('Transcribing…')
+			setStatus('alert-info', 'Transcribing…')
 			try {
 				const dataUrl = await blobToDataURL(blob)
 				const res = await fetch('/.netlify/functions/api-transcribe', {
@@ -224,7 +257,8 @@
 					throw new Error(
 						data && data.error ? data.error : 'HTTP ' + res.status
 					)
-				log('Transcribed ✔')
+				setStatus('alert-success', 'Transcribed ✔')
+				renderTranscript(data && data.transcript ? data.transcript : '')
 				printJSON(data)
 
 				// Optional: summarise
@@ -235,15 +269,21 @@
 				})
 				const sj = await sres.json().catch(() => ({}))
 				if (sres.ok) {
+					renderSummaryTodos(
+						sj && sj.summary ? sj.summary : '',
+						sj && sj.todos ? sj.todos : []
+					)
 					outEl.textContent +=
 						'\n\n---\nSummary / Todos\n' + JSON.stringify(sj, null, 2)
 				} else {
-					outEl.textContent +=
-						'\n\nSummarise failed: ' +
-						(sj && sj.error ? sj.error : 'HTTP ' + sres.status)
+					setStatus(
+						'alert-warning',
+						'Summarise failed: ' +
+							(sj && sj.error ? sj.error : 'HTTP ' + sres.status)
+					)
 				}
 			} catch (e) {
-				log('Send error: ' + (e.message || e))
+				setStatus('alert-danger', 'Send error: ' + (e.message || e))
 			}
 		}
 
@@ -258,7 +298,8 @@
 		stopBtn && (stopBtn.disabled = true)
 		playBtn && (playBtn.disabled = true)
 		sendBtn && (sendBtn.disabled = true)
-		log(
+		setStatus(
+			'alert-secondary',
 			'Idle (MediaRecorder ' +
 				(window.MediaRecorder ? 'present' : 'missing') +
 				')'

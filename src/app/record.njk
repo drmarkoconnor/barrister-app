@@ -6,33 +6,53 @@ permalink: /app/record/index.html
 
 <h1 class="mb-3">{{ title }}</h1>
 
-<div class="mb-2 small text-muted" id="recStatus">Idle</div>
+<div class="alert alert-info" role="alert">
+	<strong>How it works</strong>
+	<ul class="mb-0 mt-2">
+		<li>Click Record, speak your note, then Stop.</li>
+		<li>Replay if needed, then Send for transcription.</li>
+		<li>We’ll transcribe and summarise with actionable todos.</li>
+	</ul>
+	<div class="small text-muted">Audio stays private: it’s sent securely for transcription, then stored in your Supabase project.</div>
+	</div>
 
-<div class="d-flex gap-2 mb-3">
-	<button class="btn btn-primary" id="recBtn" type="button">● Record</button>
-	<button class="btn btn-warning" id="stopBtn" type="button" disabled>
-		■ Stop
-	</button>
-	<button class="btn btn-secondary" id="playBtn" type="button" disabled>
-		▶︎ Replay
-	</button>
-	<button class="btn btn-success" id="sendBtn" type="button" disabled>
-		⇧ Send for transcription
-	</button>
+<div class="card" style="max-width: 720px; margin: 0 auto">
+	<div class="card-body">
+		<div id="recStatus" class="alert alert-secondary py-2 px-3 mb-3">Idle</div>
+
+		<div class="d-flex flex-wrap gap-2 mb-3 justify-content-center">
+			<button class="btn btn-primary" id="recBtn" type="button">● Record</button>
+			<button class="btn btn-warning" id="stopBtn" type="button" disabled>■ Stop</button>
+			<button class="btn btn-secondary" id="playBtn" type="button" disabled>▶︎ Replay</button>
+			<button class="btn btn-success" id="sendBtn" type="button" disabled>⇧ Send for transcription</button>
+		</div>
+
+		<audio id="preview" controls preload="metadata" style="width: 100%;"></audio>
+		<input id="fileCapture" type="file" accept="audio/*" capture="user" hidden>
+	</div>
 </div>
 
-<audio
-	id="preview"
-	controls
-	preload="metadata"
-	style="width: 100%; max-width: 520px"
-></audio>
+<div class="row mt-4 g-3" style="max-width: 920px; margin: 0 auto">
+	<div class="col-12">
+		<div class="card">
+			<div class="card-header">Transcript</div>
+			<div class="card-body">
+				<div id="recTranscript" class="form-control" style="min-height: 160px; white-space: pre-wrap"></div>
+			</div>
+		</div>
+	</div>
+	<div class="col-12">
+		<div class="card">
+			<div class="card-header">Summary & Todos</div>
+			<div class="card-body">
+				<div id="recSummary" class="mb-2 text-muted"></div>
+				<ul id="recTodos" class="list-group"></ul>
+			</div>
+		</div>
+	</div>
+</div>
 
-<pre
-	id="recOut"
-	class="mt-3 p-2 bg-light border rounded small"
-	style="white-space: pre-wrap; max-height: 420px; overflow: auto"
-></pre>
+<pre id="recOut" class="mt-3 p-2 bg-light border rounded small" style="white-space: pre-wrap; max-height: 420px; overflow: auto; display:none"></pre>
 
 <script src="/assets/js/recorder.js"></script>
 

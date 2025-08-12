@@ -5,7 +5,13 @@ import { supabaseAdmin, ownerId } from './util/supabase.js'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const TYPES = new Set(['judges', 'lawyers', 'law_firms', 'courtrooms'])
+const TYPES = new Set([
+	'judges',
+	'lawyers',
+	'law_firms',
+	'courtrooms',
+	'contra',
+])
 
 const json = (s, o) => ({
 	statusCode: s,

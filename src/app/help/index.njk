@@ -48,4 +48,21 @@ layout: app.njk
   <div class="alert alert-info mt-4">
     <strong>Feedback:</strong> Just drop me an email or WhatsApp message with your suggestions — I’ll make them happen.
   </div>
+
+  <h2 class="mt-5">Privacy & Security</h2>
+  <p>Your data is yours. Here’s how it’s protected and how we can harden further:</p>
+  <ul>
+    <li><strong>Storage:</strong> Notes and transcripts are stored in your private Supabase Postgres database. Access is controlled via server-only keys.</li>
+    <li><strong>Transport:</strong> All API traffic uses HTTPS.</li>
+    <li><strong>Serverless functions:</strong> Only backend functions (not the browser) use the Supabase service key. Environment variables are stored on Netlify, not in the code.</li>
+    <li><strong>Least privilege:</strong> We scope all reads/writes by a fixed owner ID to avoid cross-account access.</li>
+    <li><strong>Backups:</strong> Supabase provides managed storage and backups; we can enable point‑in‑time recovery if desired.</li>
+  </ul>
+  <p class="mb-1"><strong>Next security steps we recommend:</strong></p>
+  <ul>
+    <li>Enable proper authentication (email link or SSO) and per-user row level security (RLS).</li>
+    <li>Rotate API keys periodically; never commit .env files to the repo.</li>
+    <li>Restrict function access by origin and add basic rate-limiting.</li>
+    <li>Enable Netlify/Cloudflare security headers (CSP, HSTS) and logs.</li>
+  </ul>
 </div>

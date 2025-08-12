@@ -67,6 +67,8 @@ export const handler = async (event) => {
 		const id = (url.searchParams.get('id') || '').trim()
 		const includeExpenses =
 			(url.searchParams.get('include_expenses') || '').trim() === '1'
+		const includeMobile =
+			(url.searchParams.get('include_mobile') || '').trim() === '1'
 		if (!id) return json(400, { error: 'id is required' })
 
 		const { data: note, error } = await supabase
@@ -92,7 +94,7 @@ export const handler = async (event) => {
 		const clientFull = [note.client_first_name, note.client_last_name]
 			.filter(Boolean)
 			.join(' ')
-		const caseTitle = `R v ${text(note.client_last_name || '')}`
+		const caseTitle = `Rex v ${text(note.client_last_name || '')}`
 		const courtDate = dateUK(note.court_date)
 		const nextDate = note.next_appearance_date
 			? dateUK(note.next_appearance_date)
@@ -111,6 +113,10 @@ export const handler = async (event) => {
 		const chambersEmail = siteData?.chambers?.email || 'clerks@23es.com'
 		const chambersPhone = siteData?.chambers?.phone_london || '020 7413 0353'
 		const chambersAddr = siteData?.chambers?.address || ''
+		const counselMobile =
+			includeMobile && process.env.COUNSEL_MOBILE
+				? text(process.env.COUNSEL_MOBILE)
+				: ''
 		const genAt = new Date().toLocaleString('en-GB', {
 			year: 'numeric',
 			month: 'short',
@@ -183,14 +189,9 @@ export const handler = async (event) => {
 		</div>
 
 		<div class="report-card">
-			<div class="d-flex align-items-center justify-content-between mb-3">
-				<div>
-					<h1 class="h3 mb-1">Attendance Note</h1>
-					<div class="text-muted">${esc(caseTitle)}</div>
-				</div>
-				<div><span class="badge bg-primary badge-status">${esc(
-					text(note.status || 'draft').toUpperCase()
-				)}</span></div>
+			<div class="mb-3">
+				<h1 class="h3 mb-1">${esc(caseTitle)}</h1>
+				<div class="text-muted">Attendance Note</div>
 			</div>
 
 			<div class="h-line"></div>
@@ -274,13 +275,18 @@ export const handler = async (event) => {
 
 			<div class="h-line"></div>
 			<div class="footer">
+				<div class="subtext">Status: ${esc(
+					text(note.status || 'draft').toUpperCase()
+				)}</div>
 				<div>${esc(chambersName)}${chambersAddr ? ' • ' + esc(chambersAddr) : ''}</div>
 				<div>${
 					chambersEmail
 						? `<a href="mailto:${esc(chambersEmail)}">${esc(chambersEmail)}</a>`
 						: ''
-				}${chambersEmail && chambersPhone ? ' • ' : ''}${
+				}${chambersEmail && (chambersPhone || counselMobile) ? ' • ' : ''}${
 			chambersPhone ? esc(chambersPhone) : ''
+		}${chambersPhone && counselMobile ? ' • ' : ''}${
+			counselMobile ? 'Personal mobile: ' + esc(counselMobile) : ''
 		}</div>
 				<div class="subtext">Generated ${esc(genAt)}</div>
 			</div>

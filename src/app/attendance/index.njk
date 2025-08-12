@@ -47,7 +47,7 @@ permalink: /app/attendance/index.html
 
   <div class="col-md-6">
     <label class="form-label">Contra (opponent)</label>
-    <input class="form-control" name="contra" placeholder="e.g. Williams">
+    <input class="form-control" name="contra" list="dl_contra" placeholder="e.g. Williams">
   </div>
 
   <div class="col-12">
@@ -61,16 +61,16 @@ permalink: /app/attendance/index.html
 
   <div class="col-12">
     <label class="form-label">Closing Paragraph</label>
-    <div class="input-group">
-      <select class="form-select" id="closing_select">
+    <div class="mb-2" style="max-width:420px">
+      <select class="form-select form-select-sm" id="closing_select">
         <option value="">Choose a boilerplate…</option>
         {% for line in closing_boilerplates %}
           <option value="{{ line }}">{{ line }}</option>
         {% endfor %}
       </select>
-      <input class="form-control" name="closing_text" id="closing_text" placeholder="Thank you for instructing me…">
     </div>
-    <div class="form-text">Pick a boilerplate then tweak the text if needed.</div>
+    <textarea class="form-control" rows="4" name="closing_text" id="closing_text" placeholder="Thank you for instructing me…"></textarea>
+    <div class="form-text">Pick a boilerplate, then edit the text below.</div>
   </div>
 
   <div class="col-12">
@@ -101,6 +101,10 @@ permalink: /app/attendance/index.html
     <div class="form-check ms-2">
       <input class="form-check-input" type="checkbox" id="includeExpenses" />
       <label class="form-check-label" for="includeExpenses">Include expenses</label>
+    </div>
+    <div class="form-check ms-2">
+      <input class="form-check-input" type="checkbox" id="includeMobile" />
+      <label class="form-check-label" for="includeMobile">Include my personal mobile in footer</label>
     </div>
     <a href="/app/attendance/list/" class="btn btn-outline-secondary">All notes</a>
   </div>
@@ -149,6 +153,7 @@ permalink: /app/attendance/index.html
 <datalist id="dl_lawyers"></datalist>
 <datalist id="dl_firms"></datalist>
 <datalist id="dl_courts"></datalist>
+<datalist id="dl_contra"></datalist>
 <datalist id="expTypes">
   {% for t in expense_types %}<option value="{{ t }}"></option>{% endfor %}
   <option value="Miscellaneous"></option>

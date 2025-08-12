@@ -354,11 +354,15 @@
 
 					var incl = document.getElementById('includeExpenses')
 					var include = incl && incl.checked ? '1' : '0'
+					var mcb = document.getElementById('includeMobile')
+					var mobile = mcb && mcb.checked ? '1' : '0'
 					var url =
 						'/.netlify/functions/api-generate-attendance-html?id=' +
 						encodeURIComponent(curId) +
 						'&include_expenses=' +
-						include
+						include +
+						'&include_mobile=' +
+						mobile
 					var r = await fetch(url)
 					var html = await r.text()
 					w.document.open()
@@ -384,6 +388,7 @@
 		loadDirectory('lawyers', 'dl_lawyers')
 		loadDirectory('law_firms', 'dl_firms')
 		loadDirectory('courtrooms', 'dl_courts')
+		loadDirectory('contra', 'dl_contra')
 
 		// If creating a new note (no id), prefill court_date to today for convenience
 		var qs = new URLSearchParams(location.search)
