@@ -106,6 +106,8 @@ export const handler = async (event) => {
 		const lawyer = text(note.lawyer_name || '')
 		const courtName = text(note.court_name || '')
 		const hearingType = text(note.hearing_type || '')
+		const outcome = text(note.outcome || '')
+		const remand = text(note.remand || '')
 		const closing = text(note.closing_text || '')
 		const advice = text(note.advice_text || '')
 		const counsel = process.env.COUNSEL_NAME
@@ -219,6 +221,12 @@ export const handler = async (event) => {
 				)}</div></div>
 				<div class="col-md-6 d-flex"><div class="k">Next Steps Date</div><div class="v">${
 					nextDate ? esc(nextDate) : '—'
+				}</div></div>
+				<div class="col-md-6 d-flex"><div class="k">Outcome</div><div class="v">${
+					outcome ? esc(outcome) : '—'
+				}</div></div>
+				<div class="col-md-6 d-flex"><div class="k">Remand</div><div class="v">${
+					remand ? esc(remand) : '—'
 				}</div></div>
 				<div class="col-md-6 d-flex"><div class="k">Instructed by</div><div class="v">${esc(
 					lawFirm
