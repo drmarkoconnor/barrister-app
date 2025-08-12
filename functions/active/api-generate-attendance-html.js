@@ -134,6 +134,77 @@ export const handler = async (event) => {
 		)
 		const totalFmt = totalExpenses ? `\u00a3${totalExpenses.toFixed(2)}` : ''
 
+		// Inline-styled HTML snippet for email clients (better paste results)
+		const emailHtml = (() => {
+			const escS = (s) =>
+				String(s ?? '')
+					.replace(/&/g, '&amp;')
+					.replace(/</g, '&lt;')
+					.replace(/>/g, '&gt;')
+					.replace(/"/g, '&quot;')
+					.replace(/'/g, '&#39;')
+			const row = (k, v) =>
+				`<tr><td style="color:#666;padding:4px 8px;width:180px;vertical-align:top">${escS(
+					k
+				)}</td><td style="padding:4px 8px;vertical-align:top">${v}</td></tr>`
+			const money = (n) => `\u00a3${Number(n || 0).toFixed(2)}`
+			const expTable = expenses.length
+				? `<table style="border-collapse:collapse;width:100%;margin-top:6px;font-size:14px">
+					<thead><tr><th style=\"text-align:left;padding:4px 8px;border-bottom:1px solid #ddd\">Type</th><th style=\"text-align:right;padding:4px 8px;border-bottom:1px solid #ddd\">Amount</th></tr></thead>
+					<tbody>${expenses
+						.map(
+							(e) =>
+								`<tr><td style=\"padding:4px 8px;border-bottom:1px solid #eee\">${escS(
+									e.expense_type
+								)}</td><td style=\"padding:4px 8px;border-bottom:1px solid #eee;text-align:right\">${money(
+									Number(e.amount || 0)
+								)}</td></tr>`
+						)
+						.join('')}</tbody>
+					<tfoot><tr><th style=\"padding:4px 8px;text-align:right\">Total</th><th style=\"padding:4px 8px;text-align:right\">${escS(
+						totalFmt
+					)}</th></tr></tfoot>
+				</table>`
+				: `<div style=\"color:#666\">No expense lines.</div>`
+			return (
+				`<!doctype html><meta charset=\"utf-8\"><div style=\"font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.45\">` +
+				`<h2 style=\"margin:0 0 8px 0;font-size:18px\">Attendance Note — ${escS(
+					caseTitle
+				)}</h2>` +
+				`<table style=\"border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 10px 0\">` +
+				row('Client', escS(clientFull)) +
+				row('Court', escS(courtName)) +
+				row('Coram', escS(coram)) +
+				row('Contra', escS(contra)) +
+				row('Hearing Type', hearingType ? escS(hearingType) : '—') +
+				row('Hearing Date', escS(courtDate)) +
+				row('Next Steps Date', nextDate ? escS(nextDate) : '—') +
+				row('Outcome', outcome ? escS(outcome) : '—') +
+				row('Remand', remand ? escS(remand) : '—') +
+				row(
+					'Instructed by',
+					`${escS(lawFirm)}${lawFirm && lawyer ? ' — ' : ''}${escS(lawyer)}`
+				) +
+				(counsel ? row('Counsel', escS(counsel)) : '') +
+				`</table>` +
+				`<div style=\"font-size:14px;margin:10px 0 4px 0;color:#0d6efd;text-transform:uppercase;letter-spacing:.02em\">Advice</div>` +
+				`<div style=\"white-space:pre-wrap;font-size:14px\">${escS(
+					advice
+				)}</div>` +
+				(closing
+					? `<div style=\\"font-size:14px;margin:10px 0 4px 0;color:#0d6efd;text-transform:uppercase;letter-spacing:.02em\\">Closing</div><div style=\\"white-space:pre-wrap;font-size:14px\\">${escS(
+							closing
+					  )}</div>`
+					: '') +
+				(includeExpenses
+					? `<div style=\\"font-size:14px;margin:10px 0 4px 0;color:#0d6efd;text-transform:uppercase;letter-spacing:.02em\\">Expenses</div>` +
+					  expTable
+					: '') +
+				`</div>`
+			)
+		})()
+		const emailHtmlB64 = Buffer.from(emailHtml, 'utf8').toString('base64')
+
 		const body = `
 <!doctype html>
 <html lang="en">
@@ -149,7 +220,7 @@ export const handler = async (event) => {
 	.v { font-weight:500; }
 	.h-line { border-top:1px solid #e9ecef; margin:1rem 0 1.25rem; }
 	.section-title { font-size:1.05rem; letter-spacing:.02em; color:#0d6efd; text-transform:uppercase; margin-top:.75rem; }
-	@media print { body { background:#fff; } .no-print { display:none !important; } .report-card { box-shadow:none; border:0; padding:0; } }
+	@media print { body { background:#fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .no-print { display:none !important; } .report-card { box-shadow:none; border:0; padding:0; } }
 	.footer { color:#6c757d; font-size: 12px; }
 	.footer a { color: inherit; text-decoration: none; }
 	.btn-copy { border: 1px solid #dee2e6; }
@@ -160,6 +231,28 @@ export const handler = async (event) => {
 	.copy-toast.show { opacity:1; transform:none; }
  </style>
  <script>
+ 	const EMAIL_HTML_B64 = '${emailHtmlB64}'
+ 	window.EMAIL_HTML_B64 = EMAIL_HTML_B64
+ 	function copyEmailHtml(){
+ 		const b64 = (window.EMAIL_HTML_B64 && window.EMAIL_HTML_B64 !== '') ? window.EMAIL_HTML_B64 : '${'${'}EMAIL_HTML_B64${'}'}'
+ 		const html = atob(b64);
+ 		if (navigator.clipboard && window.ClipboardItem) {
+ 			const toPlain = (h)=>{ const d=document.createElement('div'); d.innerHTML=h; return d.innerText }
+ 			const item = new ClipboardItem({
+ 				'text/html': new Blob([html], { type: 'text/html' }),
+ 				'text/plain': new Blob([toPlain(html)], { type: 'text/plain' })
+ 			})
+ 			navigator.clipboard.write([item]).then(()=>toast('Copied email HTML')).catch(()=>fallback())
+ 		} else { fallback() }
+ 		function fallback(){
+ 			const temp = document.createElement('div'); temp.contentEditable='true'; temp.style.position='fixed'; temp.style.left='-9999px';
+ 			document.body.appendChild(temp); temp.innerHTML = html;
+ 			const range = document.createRange(); range.selectNodeContents(temp);
+ 			const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+ 			try { document.execCommand('copy'); toast('Copied email HTML') } catch(e) { toast('Copy failed') }
+ 			sel.removeAllRanges(); document.body.removeChild(temp);
+ 		}
+ 	}
 	 function copyHtml(){
 		 const el = document.querySelector('.report-card');
 		 if(!el) return;
@@ -187,6 +280,7 @@ export const handler = async (event) => {
 				<a class="btn btn-outline-secondary btn-sm" href="/app/attendance/list/">Back to list</a>
 				<button class="btn btn-outline-secondary btn-sm" onclick="window.close()">Close tab</button>
 				<button class="btn btn-outline-dark btn-sm btn-copy" onclick="copyHtml()">Copy HTML</button>
+				<button class="btn btn-outline-dark btn-sm btn-copy" onclick="copyEmailHtml()">Copy Email HTML</button>
 				<button class="btn btn-outline-dark btn-sm btn-copy" onclick="copyText()">Copy Text</button>
 				<button class="btn btn-primary btn-sm" onclick="window.print()">Print / PDF</button>
 			</div>

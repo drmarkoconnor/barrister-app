@@ -337,14 +337,6 @@
 
 		if (viewBtn)
 			viewBtn.addEventListener('click', async function () {
-				var w = window.open('', '_blank')
-				if (!w) return alert('Popup blocked')
-				w.document.open()
-				w.document.write(
-					'<!doctype html><title>Generating report…</title><body style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:16px;color:#343a40"><p>Saving latest changes…</p></body>'
-				)
-				w.document.close()
-
 				try {
 					// Always save current form (create or update) so expenses persist
 					var payload = formToJSON()
@@ -372,19 +364,9 @@
 						include +
 						'&include_mobile=' +
 						mobile
-					var r = await fetch(url)
-					var html = await r.text()
-					w.document.open()
-					w.document.write(html)
-					w.document.close()
+					window.open(url, '_blank')
 				} catch (e) {
-					w.document.open()
-					w.document.write(
-						'<!doctype html><title>Error</title><body style="font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:16px;color:#dc3545"><h3>Failed to generate report</h3><pre style="white-space:pre-wrap">' +
-							(e && e.message ? e.message : 'Unknown error') +
-							'</pre></body>'
-					)
-					w.document.close()
+					alert('Failed to generate report: ' + e.message)
 				}
 			})
 	}
