@@ -168,7 +168,7 @@ export const handler = async (event) => {
 				: `<div style=\"color:#666\">No expense lines.</div>`
 			return (
 				`<!doctype html><meta charset=\"utf-8\"><div style=\"font-family:Arial,Helvetica,sans-serif;color:#222;line-height:1.45\">` +
-				`<h2 style=\"margin:0 0 8px 0;font-size:18px\">Attendance Note — ${escS(
+				`<h2 style=\"margin:0 0 8px 0;font-size:18px\">Attendance Note - ${escS(
 					caseTitle
 				)}</h2>` +
 				`<table style=\"border-collapse:collapse;width:100%;font-size:14px;margin:6px 0 10px 0\">` +
