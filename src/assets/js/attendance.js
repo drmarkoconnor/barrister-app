@@ -42,47 +42,8 @@
 					})
 					.join('')
 			}
-			// Special-case: populate contra_select if present
-			var contraSel = document.getElementById('contra_select')
-			if (type === 'contra' && contraSel) {
-				var opts =
-					'<option value="">Choose…</option>' +
-					'<option value="__OTHER__">Other…</option>' +
-					j.items
-						.map(function (v) {
-							v = String(v || '').trim()
-							return v
-								? '<option value="' +
-										v.replace(/"/g, '&quot;') +
-										'">' +
-										v.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
-										'</option>'
-								: ''
-						})
-						.join('')
-				contraSel.innerHTML = opts
-			}
 
-			// Special-case: populate hearing_type_select if present
-			var htSel = document.getElementById('hearing_type_select')
-			if (type === 'hearing_types' && htSel) {
-				var opts2 =
-					'<option value="">Choose…</option>' +
-					'<option value="__OTHER__">Other…</option>' +
-					j.items
-						.map(function (v) {
-							v = String(v || '').trim()
-							return v
-								? '<option value="' +
-										v.replace(/"/g, '&quot;') +
-										'">' +
-										v.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
-										'</option>'
-								: ''
-						})
-						.join('')
-				htSel.innerHTML = opts2
-			}
+			// No special-case for selects; inputs + datalists are used for consistency.
 		} catch (e) {
 			console.warn('directory load failed', type, e)
 		}
@@ -123,27 +84,7 @@
 			data[k] = String(v || '')
 		})
 
-		// Contra "Other…" support
-		try {
-			var sel = document.getElementById('contra_select')
-			var otherWrap = document.getElementById('contra_other_wrap')
-			var otherInp = document.getElementById('contra_other')
-			if (sel && sel.value === '__OTHER__' && otherInp) {
-				var custom = (otherInp.value || '').trim()
-				if (custom) data.contra = custom
-			}
-		} catch {}
-
-		// Hearing Type "Other…" support
-		try {
-			var sel2 = document.getElementById('hearing_type_select')
-			var otherWrap2 = document.getElementById('hearing_type_other_wrap')
-			var otherInp2 = document.getElementById('hearing_type_other')
-			if (sel2 && sel2.value === '__OTHER__' && otherInp2) {
-				var custom2 = (otherInp2.value || '').trim()
-				if (custom2) data.hearing_type = custom2
-			}
-		} catch {}
+		// No "Other..." support needed with inputs + datalists
 		// Gather expenses into array of objects
 		var typs = Array.from(
 			document.querySelectorAll('input[name="exp_type[]"]')
@@ -460,10 +401,11 @@
 				}
 			})
 
+		// View report: save first (create/update), then open report in new tab
 		if (viewBtn)
 			viewBtn.addEventListener('click', async function () {
 				try {
-					// Always save current form (create or update) so expenses persist
+					// Always save current form so expenses and fields persist
 					var payload = formToJSON()
 					var curId = (idInput.value || '').trim()
 					if (!curId) {
