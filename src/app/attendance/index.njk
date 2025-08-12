@@ -52,7 +52,9 @@ permalink: /app/attendance/index.html
 
   <div class="col-md-6">
     <label class="form-label">Contra (opponent)</label>
-    <input class="form-control" name="contra" list="dl_contra" placeholder="e.g. Williams">
+    <select class="form-select" name="contra" id="contra_select">
+      <option value="">Choose…</option>
+    </select>
   </div>
 
   <div class="col-12">
@@ -167,7 +169,7 @@ permalink: /app/attendance/index.html
 <datalist id="dl_lawyers"></datalist>
 <datalist id="dl_firms"></datalist>
 <datalist id="dl_courts"></datalist>
-<datalist id="dl_contra"></datalist>
+<!-- dl_contra removed for contra; using a real select instead -->
 <datalist id="dl_hearing_types"></datalist>
 <datalist id="expTypes">
   {% for t in expense_types %}<option value="{{ t }}"></option>{% endfor %}

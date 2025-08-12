@@ -136,12 +136,18 @@ export const handler = async (event) => {
 
 		// Inline-styled HTML snippet for email clients (better paste results)
 		const emailHtml = (() => {
-			const escS = (s) =>
+			const normalize = (s) =>
 				String(s ?? '')
+					.replace(/[\u2018\u2019]/g, "'")
+					.replace(/[\u201C\u201D]/g, '"')
+					.replace(/[\u2013\u2014]/g, '-')
+					.replace(/\u00A0/g, ' ')
+			const escS = (s) =>
+				normalize(s)
 					.replace(/&/g, '&amp;')
 					.replace(/</g, '&lt;')
 					.replace(/>/g, '&gt;')
-					.replace(/"/g, '&quot;')
+					.replace(/\"/g, '&quot;')
 					.replace(/'/g, '&#39;')
 			const row = (k, v) =>
 				`<tr><td style="color:#666;padding:4px 8px;width:180px;vertical-align:top">${escS(

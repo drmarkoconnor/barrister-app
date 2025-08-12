@@ -32,15 +32,35 @@
 			}
 			if (!r.ok || !j || !Array.isArray(j.items)) return
 			var dl = document.getElementById(datalistId)
-			if (!dl) return
-			dl.innerHTML = j.items
-				.map(function (v) {
-					v = String(v || '').trim()
-					return v
-						? '<option value="' + v.replace(/"/g, '&quot;') + '"></option>'
-						: ''
-				})
-				.join('')
+			if (dl) {
+				dl.innerHTML = j.items
+					.map(function (v) {
+						v = String(v || '').trim()
+						return v
+							? '<option value="' + v.replace(/"/g, '&quot;') + '"></option>'
+							: ''
+					})
+					.join('')
+			}
+			// Special-case: populate contra_select if present
+			var contraSel = document.getElementById('contra_select')
+			if (type === 'contra' && contraSel) {
+				var opts =
+					'<option value="">Choose…</option>' +
+					j.items
+						.map(function (v) {
+							v = String(v || '').trim()
+							return v
+								? '<option value="' +
+										v.replace(/"/g, '&quot;') +
+										'">' +
+										v.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+										'</option>'
+								: ''
+						})
+						.join('')
+				contraSel.innerHTML = opts
+			}
 		} catch (e) {
 			console.warn('directory load failed', type, e)
 		}
