@@ -129,7 +129,9 @@
 	async function loadItem(id) {
 		setText('#formStatus', 'Loading…')
 		var j = await fetchJSON(
-			'/.netlify/functions/api-attendance-notes?id=' + encodeURIComponent(id)
+			'/.netlify/functions/api-attendance-notes?id=' +
+				encodeURIComponent(id) +
+				'&include_expenses=1'
 		)
 		if (!j.item) throw new Error('Missing item')
 		var it = j.item
@@ -147,6 +149,32 @@
 		setStatusUI(st)
 		setText('#formStatus', '')
 		enable(viewBtn, true)
+
+		// Render existing expenses, if any
+		try {
+			var list = document.getElementById('expensesList')
+			var addBtn = document.getElementById('addExpenseBtn')
+			if (list && addBtn) {
+				list.innerHTML = ''
+				var exps = Array.isArray(j.expenses) ? j.expenses : []
+				if (exps.length === 0) {
+					// seed one row when none
+					addBtn.click()
+				} else {
+					exps.forEach(function (e) {
+						addBtn.click()
+						var rows = list.querySelectorAll('.row')
+						var row = rows[rows.length - 1]
+						var t = row.querySelector('input[name="exp_type[]"]')
+						var a = row.querySelector('input[name="exp_amount[]"]')
+						if (t) t.value = (e.expense_type || '').trim()
+						if (a) a.value = String(e.amount || '')
+					})
+				}
+			}
+		} catch (e) {
+			console.warn('render expenses failed', e)
+		}
 	}
 
 	async function createItem(payload) {

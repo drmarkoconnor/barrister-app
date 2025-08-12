@@ -55,7 +55,22 @@ export const handler = async (event) => {
 						code: error.code,
 						details: error.message,
 					})
-				return json(200, { item: data })
+
+				// Optionally include expenses for this note
+				let expenses = []
+				const inclEx =
+					(url.searchParams.get('include_expenses') || '').trim() === '1'
+				if (inclEx) {
+					const { data: ex } = await supabase
+						.from('attendance_expenses')
+						.select('id, expense_type, amount, created_at')
+						.eq('owner_id', OWN)
+						.eq('attendance_note_id', id)
+						.order('created_at', { ascending: true })
+					expenses = Array.isArray(ex) ? ex : []
+				}
+
+				return json(200, { item: data, expenses })
 			}
 
 			let q = supabase
