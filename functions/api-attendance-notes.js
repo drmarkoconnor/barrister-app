@@ -135,11 +135,51 @@ export const handler = async (event) => {
 				archived: false,
 			}
 
-			const { data, error } = await supabase
-				.from('attendance_notes')
-				.insert([row])
-				.select('id')
-				.single()
+			let data, error
+			try {
+				;({ data, error } = await supabase
+					.from('attendance_notes')
+					.insert([row])
+					.select('id')
+					.single())
+				if (error && String(error.message || '').includes('next_steps_date')) {
+					// Retry with legacy column name
+					const legacy = { ...row }
+					legacy.next_appearance_date = legacy.next_steps_date || null
+					delete legacy.next_steps_date
+					;({ data, error } = await supabase
+						.from('attendance_notes')
+						.insert([legacy])
+						.select('id')
+						.single())
+				}
+				// Generic fallback if new columns are missing in DB (error code 42703 undefined_column)
+				if (
+					error &&
+					(String(error.code) === '42703' ||
+						/String.*column.*does not exist/i.test(String(error.message || '')))
+				) {
+					const sanitized = { ...row }
+					// map legacy date
+					if (
+						Object.prototype.hasOwnProperty.call(sanitized, 'next_steps_date')
+					) {
+						sanitized.next_appearance_date = sanitized.next_steps_date
+						delete sanitized.next_steps_date
+					}
+					// drop new fields not yet in DB
+					delete sanitized.outcome
+					delete sanitized.remand
+					delete sanitized.hearing_type
+					;({ data, error } = await supabase
+						.from('attendance_notes')
+						.insert([sanitized])
+						.select('id')
+						.single())
+				}
+			} catch (e) {
+				error = e
+			}
 
 			if (error) {
 				console.error('Create attendance note error', error)
@@ -226,16 +266,65 @@ export const handler = async (event) => {
 				up.next_steps_date = up.next_appearance_date
 				delete up.next_appearance_date
 			}
-			const { error } = await supabase
-				.from('attendance_notes')
-				.update(up)
-				.eq('owner_id', OWN)
-				.eq('id', body.id)
-			if (error)
+			let updError
+			try {
+				;({ error: updError } = await supabase
+					.from('attendance_notes')
+					.update(up)
+					.eq('owner_id', OWN)
+					.eq('id', body.id))
+				if (
+					updError &&
+					String(updError.message || '').includes('next_steps_date') &&
+					Object.prototype.hasOwnProperty.call(up, 'next_steps_date')
+				) {
+					const legacyUp = { ...up }
+					legacyUp.next_appearance_date = legacyUp.next_steps_date
+					delete legacyUp.next_steps_date
+					;({ error: updError } = await supabase
+						.from('attendance_notes')
+						.update(legacyUp)
+						.eq('owner_id', OWN)
+						.eq('id', body.id))
+				}
+				if (
+					updError &&
+					(String(updError.code) === '42703' ||
+						/String.*column.*does not exist/i.test(
+							String(updError.message || '')
+						))
+				) {
+					const sanitizedUp = { ...up }
+					if (
+						Object.prototype.hasOwnProperty.call(
+							sanitizedUp,
+							'next_steps_date'
+						) &&
+						!Object.prototype.hasOwnProperty.call(
+							sanitizedUp,
+							'next_appearance_date'
+						)
+					) {
+						sanitizedUp.next_appearance_date = sanitizedUp.next_steps_date
+						delete sanitizedUp.next_steps_date
+					}
+					delete sanitizedUp.outcome
+					delete sanitizedUp.remand
+					delete sanitizedUp.hearing_type
+					;({ error: updError } = await supabase
+						.from('attendance_notes')
+						.update(sanitizedUp)
+						.eq('owner_id', OWN)
+						.eq('id', body.id))
+				}
+			} catch (e) {
+				updError = e
+			}
+			if (updError)
 				return json(500, {
 					error: 'Update failed',
-					code: error.code,
-					details: error.message,
+					code: updError.code,
+					details: updError.message,
 				})
 
 			// Replace expenses if provided
